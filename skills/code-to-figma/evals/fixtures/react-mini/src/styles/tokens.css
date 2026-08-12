@@ -1,0 +1,42 @@
+/* The design system's source of truth. A developer changing a colour edits
+   this file — tailwind.config.js only re-exports these. */
+:root {
+  /* colour — primitives */
+  --color-grey-900: #1a1a1a;
+  --color-grey-500: #6b7280;
+  --color-white: #ffffff;
+  --color-brand-500: #ff5900;
+  --color-danger-500: #dc2626;
+
+  /* colour — semantic, aliases of the primitives above */
+  --color-text-primary: var(--color-grey-900);
+  --color-text-secondary: var(--color-grey-500);
+  --color-text-inverse: var(--color-white);
+  --color-surface-primary: var(--color-white);
+  --color-surface-brand: var(--color-brand-500);
+  --color-border-danger: var(--color-danger-500);
+
+  /* overlay — note the alpha; a diff that reads only r,g,b will miss this */
+  --color-overlay-scrim: rgba(26, 26, 26, 0.48);
+
+  /* spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+
+  /* radius */
+  --radius-8: 8px;
+  --radius-rounded: 999px;
+
+  /* type */
+  --font-family-base: "Inter", system-ui, sans-serif;
+  --font-size-body: 14px;
+  --font-size-title: 20px;
+  --line-height-body: 20px;
+}
+
+/* No shadow custom properties anywhere in this project.
+   Shadows are written inline in components — see Button.tsx and Card.tsx.
+   That absence is a finding, not a gap to fill. */

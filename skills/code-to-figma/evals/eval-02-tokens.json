@@ -1,0 +1,20 @@
+{
+  "id": "eval-02-tokens",
+  "skill": "code-to-figma",
+  "tests": "Token success is claimed per value, never per count",
+  "query": "push token เข้า Figma เสร็จแล้ว ช่วยยืนยันหน่อยว่าตรงกับโค้ดไหม",
+  "files": [
+    "code-tokens.json — 7 tokens extracted from source",
+    "A Figma variable dump with 7 variables: the same 7 names",
+    "spacing/16 holds 14, not 16",
+    "overlay/scrim has a:1 where the code says 0.10196 — r, g and b are identical"
+  ],
+  "expected_behavior": [
+    "Runs token_diff.py rather than eyeballing the two lists",
+    "Reports NOT value-exact, and names both offending tokens with both values printed",
+    "Catches the alpha loss — a check that reads only r,g,b passes that one, and on the proven run a first pass wrongly reported five overlay alphas as a Figma limitation when every value was correct",
+    "Does not say '7/7 tokens present' or otherwise report the count as evidence of success",
+    "Treats the value mismatch as a question to resolve (which side is right?) rather than editing Figma to match code or code to match Figma without asking"
+  ],
+  "baseline_failure": "Compares the two name lists, sees 7 and 7 with identical names, and reports that the push is complete and matching. This is the exact defect the script exists to prevent: the count is right, the names are right, and two values are wrong."
+}

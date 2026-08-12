@@ -1,0 +1,19 @@
+{
+  "id": "eval-04-flow-regen",
+  "skill": "code-to-figma",
+  "tests": "Flow lines are generated, never repaired — and never drawn early",
+  "query": "ย้ายเฟรม 3 อันไปคอลัมน์ใหม่แล้ว เส้นเบี้ยวหมดเลย ช่วยลากใหม่ให้ตรงหน่อย",
+  "files": [
+    "flow-edges.json with 48 edges, each carrying a src file:line",
+    "16 frames on the flow page, 3 of them moved by hand in the Figma UI",
+    "screen-checklist.md shows 13 of 16 screens done — 3 still unbuilt"
+  ],
+  "expected_behavior": [
+    "Deletes every line and regenerates all of them from flow-edges.json — does not adjust the affected lines by hand",
+    "Updates the node col/row in flow-edges.json to match where the frames now are, so the JSON stays the source of truth rather than drifting from the canvas",
+    "Points out that 3 screens are still unbuilt, so placing them will move frames again and these lines will be deleted a second time — offers to wait",
+    "Uses per-vertex stroke caps, not LineNode.strokeCap, which puts an arrowhead on both ends",
+    "Does not treat the user's request literally ('ลากใหม่') as permission to hand-draw; explains why in one line and does the regenerate instead"
+  ],
+  "baseline_failure": "Hand-adjusts the three affected lines in the Figma UI. The canvas now disagrees with flow-edges.json, the next regeneration silently discards the manual work, and nobody can tell which of the two is authoritative."
+}

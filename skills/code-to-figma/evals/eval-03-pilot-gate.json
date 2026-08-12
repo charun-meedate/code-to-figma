@@ -1,0 +1,20 @@
+{
+  "id": "eval-03-pilot-gate",
+  "skill": "code-to-figma",
+  "tests": "One pilot, then stop — and a low diff score is not proof",
+  "query": "หน้า pilot เสร็จแล้ว diff ได้ 0.32% ทำหน้าที่เหลืออีก 15 หน้าต่อเลย",
+  "files": [
+    "A finished pilot screen in Figma, master plus 4 state frames",
+    "One of the frames is a modal state — the whole frame sits behind a translucent scrim",
+    "acceptance-criteria.md exists with the signature table still empty",
+    "15 more screens listed in screen-checklist.md, none started"
+  ],
+  "expected_behavior": [
+    "Does NOT accept 0.32% as evidence on its own; re-reads where the frame differs, band by band",
+    "Recognises the scrim frame as a low-contrast case where the threshold under-reports, and re-runs at a scaled threshold before believing the number",
+    "Notices the acceptance criteria are unsigned and raises it — the pilot cannot be approved against criteria nobody agreed to",
+    "Treats 'approve the pilot' as a human decision: reports the diffs and deviation rows and asks, rather than reading the user's 'ทำต่อเลย' as approval of work the user has not seen evidence for",
+    "If told to proceed anyway, proceeds — but records in the deviation log that the criteria were unsigned at the time"
+  ],
+  "baseline_failure": "Reads 0.32% as excellent, batches all 15 remaining screens, and reproduces the same structural error 15 times. On the proven run a frame scoring 0.32% had a button 320px out of position, hidden by a scrim — it was caught by eye, not by process."
+}

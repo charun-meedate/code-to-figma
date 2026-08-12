@@ -1,0 +1,27 @@
+{
+  "id": "eval-05-react-discovery",
+  "skill": "code-to-figma",
+  "tests": "Discovery works on a stack that is not Flutter — the portability proof",
+  "query": "อยากได้ design system ใน Figma จากโปรเจกต์นี้",
+  "files": [
+    "evals/fixtures/react-mini/ — a Vite + React project, no node_modules, nothing installed",
+    "package.json: react, react-router-dom, @storybook/react-vite, @storybook/test-runner, playwright, tailwindcss; packageManager is pnpm",
+    "src/styles/tokens.css — CSS custom properties: primitives, semantic aliases of those primitives, one rgba() overlay with alpha, spacing, radius, type",
+    "tailwind.config.js — every entry is a var() reference back to tokens.css; nothing is defined there",
+    "No shadow custom property anywhere; boxShadow written inline in Button.tsx",
+    ".storybook/main.ts with framework @storybook/react-vite",
+    "src/App.tsx — createBrowserRouter with two routes, one carrying a redirect loader"
+  ],
+  "expected_behavior": [
+    "Identifies React + Vite from package.json, and pnpm from the packageManager field — not from a lockfile guess",
+    "Names tokens.css as the source of truth and tailwind.config.js as a VIEW of it, with the reason: a developer changing a colour edits tokens.css. Extracting from the tailwind config would yield var() references instead of values",
+    "Recognises the semantic layer as aliases and says the chain must be resolved before comparing values, or every alias reads as a mismatch",
+    "Reports the shadow family as absent with evidence (inline boxShadow in Button.tsx, no custom property), and does not invent shadow tokens",
+    "Notes the overlay's alpha must survive extraction and comparison",
+    "Detects the existing Storybook and that it can already produce images (test-runner plus playwright are present), so the catalog question is 'reuse' not 'build'",
+    "Names src/App.tsx as the flow source, and classifies the redirect loader as a `guard` edge rather than an `action` edge",
+    "Raises responsive breakpoints as a decision the human has to make — a web product has no single frame size — rather than silently picking one",
+    "Does all of this without running npm install or any build"
+  ],
+  "baseline_failure": "Reaches for tailwind.config.js because it is the recognisable 'theme file', and produces a token set of var() strings — or extracts Tailwind's entire default palette as if it were the product's design system. Misses that the semantic layer is aliased, and invents a shadow scale because a design system is expected to have one."
+}

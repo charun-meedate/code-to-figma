@@ -1,0 +1,98 @@
+{
+  "_readme": "Registry of every Figma node, variable and style ID this programme created. Update it after every use_figma create/edit. Your context will be compacted — THIS FILE is the truth, not your memory. At the start of every session, get_metadata the file and confirm these IDs still resolve; if one is missing, STOP and ask the owner. Never silently recreate a node: a human may have moved or deleted it on purpose.",
+  "_provenance": "code-to-figma skill; schema from poppa-notes/uxui-50/figma-node-registry.json",
+
+  "file": {
+    "name": "{{FIGMA_FILE_NAME}}",
+    "fileKey": "{{FIGMA_FILE_KEY}}",
+    "url": "{{FIGMA_URL}}"
+  },
+
+  "pages": {
+    "_comment": "Canonical page set. Tokens-only scope needs just Cover and Foundations — delete the rest and say so in GROUND-TRUTH §7.",
+    "00 Cover": null,
+    "01 Foundations": null,
+    "02 Components": null,
+    "03 Flow": null,
+    "04 States": null,
+    "05 Reference": null
+  },
+
+  "temp": {},
+
+  "variableCollections": {
+    "_comment": "One entry per collection. `source` cites the code file the values came from — a collection with no source is a collection someone typed by hand.",
+    "{{collectionName}}": {
+      "id": null,
+      "key": null,
+      "modes": {},
+      "count": 0,
+      "source": "{{path/to/tokens}}",
+      "note": ""
+    }
+  },
+
+  "variableKeyIndex": {
+    "_note": "token name in Figma -> variable key. Written at creation; used for every later bind so nothing gets bound by name lookup at draw time.",
+    "{{group/name}}": null
+  },
+
+  "textStyles": {
+    "_source": "{{TOKEN_SOURCE_TYPOGRAPHY}}",
+    "_skipped": "",
+    "{{styleName}}": null
+  },
+
+  "effectStyles": {
+    "_source": "{{TOKEN_SOURCE_SHADOW}}",
+    "{{shadow/name}}": null
+  },
+
+  "components": {
+    "_page": "02 Components",
+    "{{ComponentClassName}}": {
+      "id": null,
+      "key": null,
+      "source": "{{path/to/component}}",
+      "size": null,
+      "variants": []
+    }
+  },
+
+  "images": {
+    "{{filename}}": { "imageHash": null, "note": "" }
+  },
+
+  "screenMasters": {
+    "_page": "02 Components",
+    "{{ScreenClassName}}": { "id": null, "key": null, "state": "" }
+  },
+
+  "stateFrames": {
+    "{{ScreenClassName}} / {{state-slug}}": null
+  },
+
+  "flowInstances": {
+    "_page": "03 Flow",
+    "LEGEND": null,
+    "_checkpointLog": ""
+  },
+
+  "namedVersions": [],
+  "_namedVersionsNote": "saveVersionHistoryAsync is not available through the MCP plugin API. A human names the version in the Figma UI at each phase checkpoint. Recovery is this registry plus the checklist, not version history.",
+
+  "log": [
+    { "date": "{{DATE}}", "event": "registry created" }
+  ],
+  "_logNote": "Append-only. Record discoveries and mistakes, not just successes — the log is how the next session learns what already failed.",
+
+  "nextSession": {
+    "resumeAt": "",
+    "beforeYouStart": "",
+    "buildFirst": [],
+    "thenAfter": [],
+    "assetsReady": [],
+    "stillNeeded": [],
+    "reminder": ""
+  }
+}

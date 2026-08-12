@@ -1,0 +1,12 @@
+{
+  "_comment": "Plugin API shape: getLocalVariablesAsync() + valuesByMode. Matches code-tokens.json exactly, alpha included.",
+  "variables": [
+    { "name": "text/primary", "resolvedType": "COLOR", "valuesByMode": { "1:0": { "r": 0.10196, "g": 0.10196, "b": 0.10196, "a": 1 } } },
+    { "name": "text/primary-inverse", "resolvedType": "COLOR", "valuesByMode": { "1:0": { "r": 1, "g": 1, "b": 1, "a": 1 } } },
+    { "name": "surface/main-primary", "resolvedType": "COLOR", "valuesByMode": { "1:0": { "r": 1, "g": 1, "b": 1, "a": 1 } } },
+    { "name": "overlay/scrim", "resolvedType": "COLOR", "valuesByMode": { "1:0": { "r": 1, "g": 0.34902, "b": 0, "a": 0.10196 } } },
+    { "name": "spacing/4", "resolvedType": "FLOAT", "valuesByMode": { "1:0": 4 } },
+    { "name": "spacing/16", "resolvedType": "FLOAT", "valuesByMode": { "1:0": 16 } },
+    { "name": "radius/rounded", "resolvedType": "FLOAT", "valuesByMode": { "1:0": 999 } }
+  ]
+}

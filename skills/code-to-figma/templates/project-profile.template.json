@@ -1,0 +1,113 @@
+{
+  "_readme": "What this project is and what was decided at intake. Written once by the discovery + intake pass, then read at the start of every later session so nothing is asked twice. Every field that was DISCOVERED (not answered by a human) must have a matching entry in `evidence` citing file:line. A field with no evidence and no human answer is a guess and must be null.",
+  "profileVersion": 1,
+
+  "project": {
+    "name": "",
+    "controlDir": "docs/design-mirror/",
+    "proseLanguage": "en"
+  },
+
+  "stack": {
+    "framework": null,
+    "_frameworkValues": "flutter | react | next | vue | svelte | angular | swiftui | compose | unknown",
+    "runner": { "prefix": null, "test": null, "analyze": null, "build": null },
+    "flavors": { "available": [], "chosen": null, "defines": {} },
+    "monorepoPackage": null
+  },
+
+  "tokens": {
+    "families": {
+      "_comment": "status: present | partial | absent. An `absent` family MUST carry absenceEvidence and a finding id — absence is a finding to report, never a gap to fill by inventing values.",
+      "color": {
+        "status": null,
+        "sources": [{ "file": null, "container": null, "pattern": null }],
+        "count": 0,
+        "absenceEvidence": null,
+        "finding": null
+      },
+      "spacing": { "status": null, "sources": [], "count": 0, "absenceEvidence": null, "finding": null },
+      "radius": { "status": null, "sources": [], "count": 0, "absenceEvidence": null, "finding": null },
+      "typography": { "status": null, "sources": [], "count": 0, "absenceEvidence": null, "finding": null },
+      "shadow": { "status": null, "sources": [], "count": 0, "absenceEvidence": null, "finding": null },
+      "opacity": { "status": null, "sources": [], "count": 0, "absenceEvidence": null, "finding": null }
+    },
+    "hardcodedValueScan": { "literalsOutsideTokenFiles": 0, "worstFiles": [] },
+    "naming": {
+      "codeStyle": null,
+      "_codeStyleValues": "camelCase | kebab-case | snake_case | SCREAMING_SNAKE | dot.path",
+      "figmaStyle": "slash-groups",
+      "explicitMap": {}
+    }
+  },
+
+  "components": {
+    "roots": [],
+    "tiers": null,
+    "_tiersValues": "atomic | flat | feature-local",
+    "publicClassPattern": null,
+    "coverageGuard": null
+  },
+
+  "catalog": {
+    "tool": null,
+    "_toolValues": "widgetbook | storybook | histoire | ladle | none",
+    "entry": null,
+    "willAdd": false,
+    "screenshotReady": false
+  },
+
+  "harness": {
+    "di": { "kind": null, "resolvedInBuild": null },
+    "router": { "kind": null, "routeFiles": [], "guardFile": null },
+    "i18n": { "kind": null, "locales": [], "primary": null },
+    "fakesNeeded": []
+  },
+
+  "screenshots": {
+    "mechanism": null,
+    "_mechanismValues": "catalog-rasterizer | storybook-test-runner | playwright | simulator | manual | none",
+    "galleryDir": null,
+    "namingPattern": null,
+    "frame": { "w": null, "h": null, "device": null, "safeTop": null, "safeBottom": null },
+    "referenceScale": null,
+    "scaleCalibrated": false,
+    "_scaleNote": "Do not measure anything off an image until scaleCalibrated is true. Measure one element of known size first. A forgotten ÷2 produces a double-size component that survives review.",
+    "regenCheck": null
+  },
+
+  "text": {
+    "segmentationRequired": false,
+    "locales": [],
+    "segmenter": "icu-line-break"
+  },
+
+  "figma": {
+    "fileKey": null,
+    "libraryPolicy": null,
+    "_libraryPolicyValues": "local-first | org-library",
+    "fonts": { "required": [{ "family": null, "weights": [] }], "gatePassed": false, "scriptGatePassed": false }
+  },
+
+  "scope": {
+    "storybook": null,
+    "_storybookValues": "have | add | none",
+    "level": null,
+    "_levelValues": "tokens | components | screens | flows | flows-map",
+    "evidenceBase": null,
+    "_evidenceBaseValues": "catalog | real-app | code-only",
+    "flows": [],
+    "notDoing": []
+  },
+
+  "publishing": { "ci": null, "galleryTarget": null },
+
+  "findingsDoc": null,
+
+  "evidence": {
+    "_comment": "fieldPath -> { source, date }. source is either a file:line citation or the literal string \"user-answer\". Discovery writes citations; intake writes user-answer.",
+    "stack.framework": { "source": null, "date": null }
+  },
+
+  "nextSession": { "baton": "", "updated": null }
+}

@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "_provenance": "code-to-figma skill; schema from poppa-notes/uxui-50/flow-edges.json",
+    "programme": "{{PROJECT_NAME}}",
+    "flow": "{{FLOW_NAME}}",
+    "theme": "{{THEME}}",
+    "generatedFrom": "{{ROUTER_FILES}} — traced {{DATE}}",
+    "rule": "Every line in Figma is generated from this file. Never draw one by hand, never edit one by hand. To change the flow, change this file and regenerate. If a frame moves, delete all lines and regenerate — do not repair them.",
+    "frameSize": { "w": "{{FRAME_W}}", "h": "{{FRAME_H}}" },
+    "layout": {
+      "_comment": "grid placement: x = originX + col * xPitch, y = originY + row * yPitch",
+      "xPitch": 520,
+      "yPitch": 980,
+      "originX": 0,
+      "originY": 0
+    },
+    "edgeKinds": {
+      "_comment": "These six cover every router: a user did something, a guard decided, the system moved itself, something failed and moved, something failed and stayed, someone went back. Draw each kind distinctly and put a legend on the canvas.",
+      "action": "solid, foreground colour — the user tapped or submitted something",
+      "guard": "dashed, muted — a redirect guard decided this from session or auth state; no button involved",
+      "auto": "dashed, muted — the system moves itself (timer, auto-submit, forward-on-success)",
+      "failure": "solid, danger colour — a failure branch that changes screen",
+      "selfFailure": "danger self-loop — failed but stayed on the same screen (dialog or inline error)",
+      "back": "thin solid, reverse direction — back button or system back"
+    }
+  },
+
+  "nodes": [
+    {
+      "_comment": "One per screen. `class` is the code identifier and must equal the Figma frame name. `file` cites where the route is declared, with a line number. col/row place it on the grid.",
+      "id": "{{screen-slug}}",
+      "class": "{{ScreenClassName}}",
+      "route": "{{/route/path}}",
+      "routeConst": "{{RouteConstantName}}",
+      "file": "{{path/to/file.ext}}:{{line}}",
+      "col": 0,
+      "row": 0,
+      "section": "{{1 Entry}}",
+      "note": ""
+    }
+  ],
+
+  "guardNode": {
+    "_comment": "OPTIONAL — only if the app has a central redirect guard. Delete if not. `decisions` lists what the guard does per state; `to: null` means allowed through.",
+    "id": "guard",
+    "label": "{{RedirectGuardName}}",
+    "file": "{{path/to/guard.ext}}:{{line}}",
+    "col": 0,
+    "row": 0,
+    "bypass": [],
+    "decisions": [
+      {
+        "state": "{{sessionState}}",
+        "extra": "",
+        "to": null,
+        "note": "",
+        "src": "{{file}}:{{line}}"
+      }
+    ]
+  },
+
+  "edges": [
+    {
+      "_comment": "`label` is the user-facing caption drawn on the arrow. `condition` is the code-level predicate. `src` is mandatory — an edge with no source line is a guess. `highlight: true` flags a genuinely dangerous path.",
+      "from": "{{node-id}}",
+      "to": "{{node-id}}",
+      "kind": "action",
+      "label": "{{what the user did}}",
+      "condition": "{{the predicate in code}}",
+      "src": "{{file}}:{{lines}}",
+      "note": "",
+      "highlight": false
+    }
+  ],
+
+  "outOfFlowEdges": [
+    {
+      "_comment": "Entries and exits that cross the boundary of this flow. Drawn to a stub, not to a frame.",
+      "from": "{{node-id}}",
+      "to": "{{outside-name}}",
+      "kind": "action",
+      "label": "",
+      "note": "",
+      "src": ""
+    }
+  ]
+}

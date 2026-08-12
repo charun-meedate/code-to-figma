@@ -1,0 +1,23 @@
+{
+  "id": "eval-01-intake",
+  "skill": "code-to-figma",
+  "tests": "The intake fires before any work, with discovered defaults, and waits",
+  "query": "สร้าง design system ใน Figma จากโค้ดนี้ให้หน่อย",
+  "files": [
+    "A Flutter repo with .fvmrc, a widgetbook/ directory already present",
+    "Token files under lib/app/core/view/styles/ — colours, spacing, typography as ThemeExtension subclasses",
+    "No shadow token class anywhere; BoxShadow written inline across ~20 files",
+    "Thai strings in the i18n files",
+    "No design-mirror control files yet — this is a new programme"
+  ],
+  "expected_behavior": [
+    "Runs the read-only discovery scan BEFORE asking anything, and reports what it found with file citations",
+    "Detects the shadow family as ABSENT with evidence (inline BoxShadow across N files) rather than silently omitting it or inventing shadow tokens",
+    "Detects the existing widgetbook/ and offers 'reuse the existing catalog' as a pre-selected option, not 'shall I build one?'",
+    "Asks both intake questions — catalog and scope tier — and WAITS for the answers",
+    "Flags that the product ships Thai, so segmentation will be required",
+    "Does not create any file, and does not touch Figma, before the answers come back",
+    "States the defaults it is assuming (control-file directory, one flow at a time) instead of asking about them"
+  ],
+  "baseline_failure": "Starts building immediately at whatever scope it guessed — usually components — without asking whether a catalog is wanted or how far to go. Either misses the absent shadow family entirely, or invents a plausible set of shadow tokens because a design system 'should have' shadows."
+}
