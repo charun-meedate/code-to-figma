@@ -9,13 +9,13 @@ Instantiate from `templates/`. Fill placeholders from `project-profile.json`.
 
 | File | Created | Written by | Read by |
 |---|---|---|---|
-| `project-profile.json` | intake | discovery + intake | every session, first |
-| `GROUND-TRUTH-RULES.md` | intake | agent, grows during work | every session, in full |
+| `project-profile.json` | intake | discovery + intake | session ritual step 2 |
+| `GROUND-TRUTH-RULES.md` | intake | agent, grows during work | session ritual step 1, in full |
 | `acceptance-criteria.md` | intake, **unsigned** | agent, signed by leads | reviewer |
 | `deviation-log.md` | intake | agent, approved by lead | reviewer |
 | `screen-checklist.md` | when the frame list is enumerable | agent | the human, for progress |
 | `flow-edges.json` | flows tier, from the router trace | agent | the line generator only |
-| `figma-node-registry.json` | at the first Figma write | agent, after every create | every session, second |
+| `figma-node-registry.json` | at the first Figma write | agent, after every create | session ritual step 3 |
 
 Four exist at the end of intake. The other three appear when there is
 something true to put in them — a checklist with estimated counts is worse
@@ -26,13 +26,24 @@ than no checklist.
 Written as §0 of the rules file because it must be read before anything else:
 
 1. Read `GROUND-TRUTH-RULES.md` to the end.
-2. Read `figma-node-registry.json`.
-3. `get_metadata` on the Figma file; confirm the registry's IDs still resolve.
+2. Read `project-profile.json` — it holds the file key, the token sources and
+   every decision already made, so nothing gets asked twice.
+3. Read `figma-node-registry.json`.
+4. `get_metadata` on the Figma file; confirm the registry's IDs still resolve.
    **A missing ID means stop and ask.** Never recreate silently — a human may
    have moved or deleted it deliberately, and a silent recreate leaves two of
    everything with no way to tell which is live.
-4. Read `screen-checklist.md` to find the resume point.
-5. Load the `figma-use` skill before the first `use_figma` call.
+5. Read `screen-checklist.md` to find the resume point.
+6. Load the `figma-use` skill before the first `use_figma` call.
+
+Keep this list identical in three places — here, §0 of the rules template, and
+SKILL.md. A ritual that differs between the file that states it and the file
+that performs it is not a ritual.
+
+**Conditional placeholders.** Templates use `{{IF_SEGMENTATION: …}}` for text
+that only belongs when the profile turns a feature on. Keep the inner text and
+drop the wrapper when the condition holds; delete the whole span when it does
+not. Never ship the `{{IF_…}}` syntax into a live control file.
 
 ## Why the registry is the truth
 

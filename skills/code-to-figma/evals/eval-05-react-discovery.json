@@ -6,11 +6,13 @@
   "files": [
     "evals/fixtures/react-mini/ — a Vite + React project, no node_modules, nothing installed",
     "package.json: react, react-router-dom, @storybook/react-vite, @storybook/test-runner, playwright, tailwindcss; packageManager is pnpm",
-    "src/styles/tokens.css — CSS custom properties: primitives, semantic aliases of those primitives, one rgba() overlay with alpha, spacing, radius, type",
-    "tailwind.config.js — every entry is a var() reference back to tokens.css; nothing is defined there",
-    "No shadow custom property anywhere; boxShadow written inline in Button.tsx",
-    ".storybook/main.ts with framework @storybook/react-vite",
-    "src/App.tsx — createBrowserRouter with two routes, one carrying a redirect loader"
+    "src/styles/tokens.css — CSS custom properties: 5 primitives, 6 semantic aliases OF those primitives, 1 rgba() overlay with alpha, 5 spacing, 2 radius, 4 type",
+    "tailwind.config.js — every entry is a var() reference back to tokens.css, nothing is defined there, AND it is deliberately incomplete: 3 of 12 colours, 3 of 5 spacings",
+    "No shadow custom property anywhere; two different boxShadow values written inline, in Button.tsx and Card.tsx",
+    "No opacity scale; the only alpha is baked into the overlay token",
+    ".storybook/main.ts with framework @storybook/react-vite, and 6 stories across Button and Card",
+    "src/App.tsx — createBrowserRouter with two routes, one carrying a redirect loader, and no action-driven navigation anywhere",
+    "--font-family-base is a font STACK, and no font-weight is declared anywhere in the project"
   ],
   "expected_behavior": [
     "Identifies React + Vite from package.json, and pnpm from the packageManager field — not from a lockfile guess",
@@ -19,7 +21,10 @@
     "Reports the shadow family as absent with evidence (inline boxShadow in Button.tsx, no custom property), and does not invent shadow tokens",
     "Notes the overlay's alpha must survive extraction and comparison",
     "Detects the existing Storybook and that it can already produce images (test-runner plus playwright are present), so the catalog question is 'reuse' not 'build'",
+    "Notices the tailwind config is DRIFTING from tokens.css — missing 9 of 12 colours and 2 of 5 spacings — and reports it as a finding for the team, since a drifting view is evidence the source-of-truth call was right",
     "Names src/App.tsx as the flow source, and classifies the redirect loader as a `guard` edge rather than an `action` edge",
+    "Reports that ZERO action edges exist — neither Button receives an onClick — instead of drawing a sign-in → dashboard arrow that no line of code supports",
+    "Blocks the P0 font gate: --font-family-base is a stack not a scalar, and no weight is declared anywhere, so 'Inter at the weights the code uses' cannot be signed until the human states them",
     "Raises responsive breakpoints as a decision the human has to make — a web product has no single frame size — rather than silently picking one",
     "Does all of this without running npm install or any build"
   ],

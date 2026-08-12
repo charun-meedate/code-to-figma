@@ -21,15 +21,27 @@ citation and no human answer must stay `null`.
 
 ## D1 · Framework
 
-| Signal | Verdict |
-|---|---|
-| `pubspec.yaml` containing a `flutter:` key | Flutter |
-| `package.json` with `react`/`react-dom` | React |
-| `package.json` with `next` | Next |
-| `package.json` with `vue` / `svelte` / `@angular/core` | Vue / Svelte / Angular |
-| `*.xcodeproj`/`Package.swift` plus `import SwiftUI` | SwiftUI |
-| `build.gradle(.kts)` with `androidx.compose` | Compose |
-| none of these | the unknown-stack path — `stacks/unknown.md` |
+**Test in this order and stop at the first match.** The order is the whole
+point: nearly every specific framework also declares its base framework, so an
+unordered check routes React Native to the web playbook, where not one
+instruction applies.
+
+| # | Signal | Verdict |
+|---|---|---|
+| 1 | `pubspec.yaml` containing a `flutter:` key | Flutter |
+| 2 | `package.json` with `react-native` or `expo` | **React Native** → `stacks/native-mobile.md`, not web |
+| 3 | `package.json` with `next` / `nuxt` / `@remix-run/*` / `astro` | Next / Nuxt / Remix / Astro → `stacks/web.md` |
+| 4 | `package.json` with `react`/`react-dom` / `vue` / `svelte` / `@angular/core` / `solid-js` | React / Vue / Svelte / Angular / Solid → `stacks/web.md` |
+| 5 | `*.xcodeproj`/`Package.swift` plus `import SwiftUI` | SwiftUI |
+| 6 | `build.gradle(.kts)` with `androidx.compose` **or** a `libs.versions.toml` declaring a compose coordinate | Compose |
+| 7 | none of these | the unknown-stack path — `stacks/unknown.md` |
+
+Row 6 needs the version-catalog check because a Gradle build using one reads
+`implementation(libs.compose.ui)`, and the `androidx.compose` string never
+appears in the build file at all.
+
+A framework not in the table is not a failure — take the unknown-stack path,
+which ends by writing a playbook for it.
 
 Several hits in different directories means a monorepo: ask which package is
 in scope before anything else, and record it as `stack.monorepoPackage`.

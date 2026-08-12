@@ -24,10 +24,10 @@ those four is framework-specific.
 
 If the control files already exist in the project, this is a **resume**: skip
 the intake entirely and run the session ritual — read GROUND-TRUTH-RULES to
-the end, read the node registry, `get_metadata` the Figma file and confirm
-every registry ID still resolves, read the checklist for the resume point,
-load `figma-use` before the first Figma call. **A missing ID means stop and
-ask; never silently recreate.**
+the end, read `project-profile.json`, read the node registry, `get_metadata`
+the Figma file and confirm every registry ID still resolves, read the
+checklist for the resume point, load `figma-use` before the first Figma call.
+**A missing ID means stop and ask; never silently recreate.**
 
 Otherwise, discover, then ask. The intake fires exactly once per programme.
 
@@ -60,10 +60,28 @@ call carrying both questions; otherwise ask them as plain text and wait.
 - **T2 + components** — masters and variants for shared components
 - **T3 + screens** — every screen, every state
 - **T4 + flows** — the navigation graph, drawn from the router
+- **flows-map** — *not* cumulative: the navigation graph alone, nodes drawn as
+  placeholder cards. Code-only, no screens, cheap. Offer it whenever someone
+  wants to see how the product connects without paying for screen art.
 
 **Q3 — only when Q1 is "no" and scope is T3 or higher.** Which evidence base:
 driving the real app (cannot force error, empty or edge states) or reading
 code only (weakest; the acceptance criteria must say so in writing).
+
+**Q4 — the three the repository cannot answer.** Ask these every time, even
+when discovery guessed well; each was a human decision that was expensive to
+get wrong:
+- **Which Figma file?** A URL to write into, or permission to create one.
+  Nothing downstream can run without a file key — no discovery step produces
+  it, and a repository cannot know it.
+- **May the organisation's existing design-system library be used**, or is this
+  built standalone from code first?
+- **Which build variant/flavour is the reference**, when the project has more
+  than one.
+
+On the web, add: **which breakpoints get documented**, and **which themes** —
+a web product has no single frame size, and silently drawing one width is the
+same defect as an unmeasured number.
 
 An answer already stated plainly in the user's prompt can be taken — but
 restate it for confirmation. **A guessed intake poisons every phase after it**,
@@ -87,17 +105,25 @@ nothing but the router.
 
 ## The pipeline
 
-**P0 Gates** → **P1 Foundations** → **P2 Assets** → **P3 Component kit** →
-**P4 Pilot** → **P5 Scale** → **P5.5 Cross-cutting** → **P6 Flow lines** →
-**P7 Verify and hand off**
+**P-1 Catalog** (only if Q1 said build one) → **P0 Gates** → **P1 Foundations**
+→ **P2 Assets** → **P3 Component kit** → **P4 Pilot** → **P5 Scale** →
+**P5.5 Cross-cutting** → **P6 Flow lines** → **P7 Verify and hand off**
 
-Two of those are gates, not steps:
+**P-1 comes first and is a separate project.** Building a catalog is days of
+work, not a step — and P0 cannot check that reference images exist until it has
+produced them. Its exit condition is the contract in `storybook-generic.md`.
+On Flutter, hand it to the two bundled skills.
+
+Two of the rest are gates, not steps:
 
 - **P0 does not end until the acceptance criteria are signed.** Also in P0: the
   font exists in Figma at the exact weights the code uses — if it does not,
   **stop and wait for it; never substitute a similar font.**
 - **P5 does not begin until one pilot screen has been approved by a human.**
   If the approach is wrong it is wrong identically on every screen.
+
+Which P0 gates apply depends on the tier — tokens-only and flows-map never
+produce images, so the image gates do not apply to them. See `phases.md`.
 
 Flow lines come last and only once frames have stopped moving — a moved frame
 invalidates every line, and lines are regenerated wholesale, never repaired.
@@ -138,7 +164,8 @@ same names, the same count, and different values, and a count check passes
 every time. Colour comparison includes alpha.
 
 **Frames:** export, downscale the reference, and read **where** it differs.
-`image_diff.py` reports the differing rows as bands. **Pass only when every
+`image_diff.py --ref … --fig … --out diff.png` reports the differing rows as
+bands and writes the composite you must open. **Pass only when every
 band lies on a row of text**; a band on a card or button edge is structural
 drift at any percentage. On the proven run a frame scored 0.32% while a button
 sat 320px out of place, hidden under a translucent scrim — the script now

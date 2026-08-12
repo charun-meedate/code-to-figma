@@ -21,12 +21,14 @@ something ugly, Figma has to be ugly in the same way.**
 ## 0. Session-start ritual (never skip)
 
 1. Read this file to the end.
-2. Read `figma-node-registry.json` — take the IDs you need.
-3. `get_metadata` on the Figma file and confirm the registry IDs still resolve.
+2. Read `project-profile.json` — the Figma file key, the token sources, and
+   every decision already taken.
+3. Read `figma-node-registry.json` — take the IDs you need.
+4. `get_metadata` on the Figma file and confirm the registry IDs still resolve.
    - **A missing ID means stop and ask {{OWNER}}.** Never silently recreate it —
      a human may have moved or deleted it on purpose.
-4. Read `screen-checklist.md` to find where the work stopped.
-5. Load the `figma-use` skill before the first `use_figma` call of the session.
+5. Read `screen-checklist.md` to find where the work stopped.
+6. Load the `figma-use` skill before the first `use_figma` call of the session.
 
 Your context will be compacted. **The registry file is the truth, not your
 memory of it.**
@@ -93,7 +95,7 @@ A mismatch on those two after a regen is expected, not an error. -->
 | Colours | {{TOKEN_SOURCE_COLOR}} |
 | Typography (family / size / weight / line-height / letter-spacing) | {{TOKEN_SOURCE_TYPOGRAPHY}} |
 | Spacing / radius / sizes | {{TOKEN_SOURCE_SPACING}} |
-| Component geometry (buttons, inputs, bars) | {{TOKEN_SOURCE_COMPONENT}} |
+| Stroke weight / shadow | {{TOKEN_SOURCE_SHADOW}} — write "absent, finding {{id}}" if there is no token layer |
 | Where a screen goes when something is tapped | {{ROUTER_FILES}} |
 | Which states a screen has | {{STATE_SOURCE}} |
 

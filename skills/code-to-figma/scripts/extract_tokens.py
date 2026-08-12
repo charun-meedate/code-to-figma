@@ -71,15 +71,17 @@ PRESETS: dict[str, dict[str, str]] = {
     },
     "js-object-string": {
         "pattern": r"['\"]?(?P<name>[\w-]+)['\"]?\s*:\s*['\"](?P<value>#[0-9a-fA-F]{3,8}|[^'\"]+)['\"]",
-        "about": "JS/TS theme object: `textPrimary: '#1A1A1A'` — tailwind, MUI, Chakra, styled-components",
+        "about": "FLAT JS/TS theme object only: `textPrimary: '#1A1A1A'`. A NESTED object "
+                 "(tailwind, MUI, Chakra) loses its key path — dump the resolved theme to JSON instead",
     },
     "js-object-number": {
         "pattern": r"['\"]?(?P<name>[\w-]+)['\"]?\s*:\s*(?P<value>-?\d+(?:\.\d+)?)\s*[,}]",
-        "about": "JS/TS theme object: `spacing16: 16,`",
+        "about": "FLAT JS/TS theme object only: `spacing16: 16,`",
     },
     "swift-color": {
-        "pattern": r"static\s+let\s+(?P<name>\w+)\s*(?::\s*Color)?\s*=\s*Color\((?P<value>[^)]+)\)",
-        "about": "SwiftUI: `static let textPrimary = Color(...)`",
+        "pattern": r"static\s+let\s+(?P<name>\w+)\s*(?::\s*Color)?\s*=\s*Color\((?P<value>[^()]*(?:\([^()]*\)[^()]*)*)\)",
+        "about": "SwiftUI: `static let textPrimary = Color(red:green:blue:)`. Color(\"Name\") is an "
+                 "asset-catalogue reference, not a value — read the xcassets JSON for those",
     },
     "compose-color": {
         "pattern": r"val\s+(?P<name>\w+)\s*(?::\s*Color)?\s*=\s*Color\(\s*(?P<value>0x[0-9A-Fa-f]{8})\s*\)",
@@ -165,11 +167,21 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
             if name in skip:
                 continue
             line = path.read_text(errors="replace").count("\n", 0, offset + m.start()) + 1
+            value = m.group("value").strip()
+            if re.fullmatch(r"[\"'].*[\"']", value):
+                print(f"  ⚠ [{family}] {name} = {value} is a NAME, not a value — probably an "
+                      f"asset-catalogue reference ({rel}:{line}). Read that catalogue instead.",
+                      file=sys.stderr)
             if name in found:
+                # Not harmless dedup: with a leaf-key regex on a nested object this
+                # is silent data loss, and the diff downstream reports a partial set
+                # as a clean comparison.
                 print(f"  ⚠ [{family}] {name} declared twice — {found[name]['file']}:"
-                      f"{found[name]['line']} and {rel}:{line}. Taking the first.", file=sys.stderr)
+                      f"{found[name]['line']} and {rel}:{line}. Taking the first. If this "
+                      f"source is a NESTED object, the pattern is losing the key path: dump "
+                      f"the resolved theme to JSON and walk it instead.", file=sys.stderr)
                 continue
-            found[name] = {"value": m.group("value").strip(), "file": rel, "line": line}
+            found[name] = {"value": value, "file": rel, "line": line}
 
     return found
 

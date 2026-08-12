@@ -69,11 +69,21 @@
     "_mechanismValues": "catalog-rasterizer | storybook-test-runner | playwright | simulator | manual | none",
     "galleryDir": null,
     "namingPattern": null,
-    "frame": { "w": null, "h": null, "device": null, "safeTop": null, "safeBottom": null },
-    "referenceScale": null,
+    "_surfacesNote": "A list, not one frame. A web product has several breakpoints and a native one may have several devices; a frame's identity is screen × surface × theme. One entry is fine — say so deliberately, and put the surfaces you are NOT documenting in scope.notDoing.",
+    "surfaces": [
+      { "name": null, "w": null, "h": null, "device": null, "safeTop": null, "safeBottom": null, "scale": null }
+    ],
+    "themes": [],
+    "_themesNote": "Empty means single-theme. Two themes double the frame count at screen level but cost almost nothing at token level — decide at intake, per tier.",
     "scaleCalibrated": false,
-    "_scaleNote": "Do not measure anything off an image until scaleCalibrated is true. Measure one element of known size first. A forgotten ÷2 produces a double-size component that survives review.",
+    "_scaleNote": "Do not measure anything off an image until scaleCalibrated is true. Measure one element of known size first. A forgotten ÷2 produces a double-size component that survives review. On a tier that produces no images, false is the correct final state.",
     "regenCheck": null
+  },
+
+  "criteria": {
+    "structTolerancePx": 2,
+    "baselineTolerancePx": 2,
+    "_note": "Fill {{STRUCT_TOLERANCE}} and {{BASELINE_TOLERANCE}} in acceptance-criteria.md and deviation-log.md from here. Both are stated at 1x — scale them if the documented surface is not 1x."
   },
 
   "text": {

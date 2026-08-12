@@ -114,3 +114,13 @@ selftest ตรวจ schema ของ templates อยู่ ถ้าจะแ
 
 `install.sh` จะ diff กับของเดิมและถามก่อนทับ ถ้าของเดิมต่าง — เผื่อกรณีมีคนแก้ในเครื่อง
 แล้วยังไม่ได้ push กลับมา
+
+## ผลการ audit
+
+`docs/AUDIT-2026-08-13.md` — adversarial audit รอบแรก 24 findings แก้ 22 เหลือ 2 ที่
+"บรรเทาแล้วแต่ยังไม่แก้จริง" (nested JS theme object ยังไม่มี parser · DTCG alias
+ยัง resolve ไม่ได้) · **อ่านหัวข้อ "Mitigated, not solved" ก่อนใช้เส้นทาง web ที่เป็น
+Tailwind/MUI nested หรือ DTCG semantic layer**
+
+external CLI reviewer รันไม่ได้ทั้ง codex และ gemini → มุมมองจากนอกยังขาดอยู่
+ถ้าใครมี CLI ที่ใช้ได้ ช่วยรันซ้ำแล้วเพิ่มผลลงไฟล์นั้น

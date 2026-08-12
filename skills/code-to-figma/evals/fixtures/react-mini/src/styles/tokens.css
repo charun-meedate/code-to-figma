@@ -38,5 +38,5 @@
 }
 
 /* No shadow custom properties anywhere in this project.
-   Shadows are written inline in components — see Button.tsx and Card.tsx.
-   That absence is a finding, not a gap to fill. */
+   Shadows are written inline in components — Button.tsx and Card.tsx, two
+   different values. That absence is a finding, not a gap to fill. */

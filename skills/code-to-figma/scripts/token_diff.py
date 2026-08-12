@@ -23,13 +23,19 @@ INPUTS
            · the plugin API dump: [{name, resolvedType, valuesByMode: {...}}]
            · {"variables": [ ...same... ]}
            · the MCP get_variable_defs shape: {"text/primary": "#1A1A1A"}
-  --map    {"explicit": {"codeName": "figma/name"}, "ignore": ["codeName"]}
+  --map    {"explicit":    {"codeName": "figma/name"},
+            "ignore":      ["codeName"],        code-side: not expected in Figma
+            "ignoreFigma": ["prefix/*"]}        Figma-side: variables this programme
+                                                does not own. Needed whenever the file
+                                                already holds variables — e.g. an org
+                                                library — or the gate can never pass.
 
 NAME MAPPING, in order:
   1. an explicit entry in --map                   (always wins)
-  2. camelCase → group/kebab-case                 (textPrimaryInverse → text/primary-inverse,
-                                                   spacing16 → spacing/16)
-  3. loose compare — strip case and separators    (reported as a match that needs
+  2. the family-qualified name, then the bare one (spacing.sm → spacing/sm, then sm)
+  3. camelCase → group/leaf                       (textPrimaryInverse → text/primary-inverse)
+     already-separated → every separator a slash  (color-text-primary → color/text/primary)
+  4. loose compare — strip case and separators    (reported as a match that needs
                                                    an explicit entry, never silent)
 
 Provenance: the method proven on the reference programme (dump every variable from Figma, parse
@@ -49,8 +55,23 @@ VERSION = "token_diff/1.0"
 
 # ---------------------------------------------------------------- value model
 
+def _hsl_to_rgb(h: float, s: float, light: float) -> tuple[int, int, int]:
+    c = (1 - abs(2 * light - 1)) * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = light - c / 2
+    r, g, b = [(c, x, 0), (x, c, 0), (0, c, x), (0, x, c), (x, 0, c), (c, 0, x)][int(h // 60) % 6]
+    return tuple(round((v + m) * 255) for v in (r, g, b))
+
+
 def norm_color(v) -> str | None:
-    """Everything colour-shaped becomes #rrggbbaa lowercase, alpha included."""
+    """Everything colour-shaped becomes #rrggbbaa lowercase, alpha included.
+
+    Hex alone is not enough. Real token files ship rgb()/rgba()/hsl(), and a
+    bare HSL triplet is how the most widely copied web token setup writes every
+    colour. Anything not understood here comes back None and is reported as
+    unsupported — never as a mismatch, which would send someone off to "fix" a
+    Figma variable that was correct.
+    """
     if isinstance(v, dict) and {"r", "g", "b"} <= set(v):
         r, g, b = (round(float(v[k]) * 255) for k in ("r", "g", "b"))
         a = round(float(v.get("a", 1)) * 255)
@@ -58,6 +79,39 @@ def norm_color(v) -> str | None:
     if not isinstance(v, str):
         return None
     s = v.strip().lower()
+
+    # rgb()/rgba()/hsl()/hsla(), comma- or space-separated, with optional /alpha
+    fn = re.fullmatch(r"(rgba?|hsla?)\(([^)]+)\)", s)
+    if fn:
+        parts = re.split(r"[,\s/]+", fn.group(2).strip())
+        nums = []
+        for p in parts:
+            if not p:
+                continue
+            pct = p.endswith("%")
+            try:
+                n = float(p.rstrip("%"))
+            except ValueError:
+                return None
+            nums.append((n, pct))
+        if len(nums) not in (3, 4):
+            return None
+        a = 1.0
+        if len(nums) == 4:
+            a = nums[3][0] / 100 if nums[3][1] else nums[3][0]
+        if fn.group(1).startswith("rgb"):
+            r, g, b = (round(n * 255 / 100) if pct else round(n) for n, pct in nums[:3])
+        else:
+            r, g, b = _hsl_to_rgb(nums[0][0], nums[1][0] / 100, nums[2][0] / 100)
+        return f"#{r:02x}{g:02x}{b:02x}{round(a * 255):02x}"
+
+    # A bare HSL triplet — how shadcn-style setups store colours.
+    triplet = re.fullmatch(r"(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%", s)
+    if triplet:
+        r, g, b = _hsl_to_rgb(float(triplet.group(1)), float(triplet.group(2)) / 100,
+                              float(triplet.group(3)) / 100)
+        return f"#{r:02x}{g:02x}{b:02x}ff"
+
     m = re.fullmatch(r"(?:#|0x)([0-9a-f]{3,8})", s)
     if not m:
         m = re.fullmatch(r"(?:const\s+)?color\(0x([0-9a-f]{8})\)", s)
@@ -113,7 +167,24 @@ def normalize(v):
 _SPLIT = re.compile(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Za-z])(?=[0-9])|[_\-.\s]+")
 
 
+_ALREADY_SEPARATED = re.compile(r"[-_.]")
+
+
 def rule_map(code_name: str) -> str:
+    """Map a code token name onto a Figma slash-grouped name.
+
+    Two conventions, because they mean different things. camelCase carries one
+    implicit boundary — the first hump is the group and the rest is the leaf
+    (`textPrimaryInverse` -> `text/primary-inverse`). A name that is ALREADY
+    separated states its own hierarchy, so every separator becomes a slash
+    (`color-text-primary` -> `color/text/primary`, which is what the web
+    playbook promises). Collapsing the second case to one slash left every web
+    token matching only by loose comparison, i.e. the rule path contributed
+    nothing off camelCase.
+    """
+    if _ALREADY_SEPARATED.search(code_name):
+        parts = [p for p in re.split(r"[-_.\s]+", code_name) if p]
+        return "/".join(p.lower() for p in parts)
     parts = [p for p in _SPLIT.split(code_name) if p]
     if not parts:
         return code_name
@@ -129,6 +200,15 @@ def loose(name: str) -> str:
 # --------------------------------------------------------------- input readers
 
 def read_code(path: Path) -> dict[str, dict]:
+    """Load code tokens, keyed so two families cannot silently eat each other.
+
+    `sm`, `md` and `lg` recur across spacing, radius, shadow and font-size on
+    almost every web project. Keying on the bare name meant the second family
+    overwrote the first and the report then counted what survived — a silent
+    loss inside the one script whose whole job is to stop a count from standing
+    in for a comparison. The key is now family-qualified; matching still tries
+    the bare name, so nothing that worked before stops working.
+    """
     raw = json.loads(path.read_text())
     out: dict[str, dict] = {}
     nested = any(isinstance(v, dict) and not {"value"} & set(v) for v in raw.values())
@@ -138,14 +218,21 @@ def read_code(path: Path) -> dict[str, dict]:
                 continue
             for name, entry in tokens.items():
                 value = entry.get("value") if isinstance(entry, dict) else entry
-                out[name] = {"value": value, "family": family,
-                             "where": (entry or {}).get("file") if isinstance(entry, dict) else None}
+                key = f"{family}.{name}"
+                if key in out:
+                    raise SystemExit(f"{key} declared twice in {path.name} — refusing to guess which wins.")
+                out[key] = {
+                    "value": value,
+                    "family": family,
+                    "bare": name,
+                    "where": (entry or {}).get("file") if isinstance(entry, dict) else None,
+                }
     else:
         for name, entry in raw.items():
             if name.startswith("_"):
                 continue
             value = entry.get("value") if isinstance(entry, dict) else entry
-            out[name] = {"value": value, "family": None, "where": None}
+            out[name] = {"value": value, "family": None, "bare": name, "where": None}
     return out
 
 
@@ -196,46 +283,70 @@ def main() -> int:
     for k in figma:
         figma_loose.setdefault(loose(k), []).append(k)
 
-    matched, mismatched, missing_figma, loose_hits = [], [], [], []
+    matched, mismatched, missing_figma, loose_hits, unsupported = [], [], [], [], []
     used_figma: set[str] = set()
 
-    for name, entry in sorted(code.items()):
-        if name in ignore:
+    for key, entry in sorted(code.items()):
+        bare = entry.get("bare", key)
+        if key in ignore or bare in ignore:
             continue
+        # Try the family-qualified name first (spacing.sm -> spacing/sm), then
+        # the bare one, so a flat Figma naming still matches.
+        candidates_src = [key, bare] if bare != key else [key]
         target, how = None, None
-        if name in explicit:
-            target, how = explicit[name], "explicit"
-        elif (r := rule_map(name)) in figma:
-            target, how = r, "rule"
-        elif name in figma:
-            target, how = name, "verbatim"
-        else:
-            cands = figma_loose.get(loose(rule_map(name))) or figma_loose.get(loose(name)) or []
-            if len(cands) == 1:
-                target, how = cands[0], "loose"
+        for cand in candidates_src:
+            if cand in explicit:
+                target, how = explicit[cand], "explicit"
+                break
+            if (r := rule_map(cand)) in figma:
+                target, how = r, "rule"
+                break
+            if cand in figma:
+                target, how = cand, "verbatim"
+                break
+        if target is None:
+            for cand in candidates_src:
+                cands = figma_loose.get(loose(rule_map(cand))) or figma_loose.get(loose(cand)) or []
+                if len(cands) == 1:
+                    target, how = cands[0], "loose"
+                    break
 
         if target is None:
-            missing_figma.append(name)
+            missing_figma.append(key)
             continue
 
         used_figma.add(target)
         cv, fv = normalize(entry["value"]), normalize(figma[target])
+        # If EITHER side did not parse into a comparable type, the two cannot be
+        # compared at all — an unresolved DTCG alias, a var() reference or a
+        # composite token against a real colour. Calling that a mismatch sends
+        # someone off to change a Figma variable that was correct.
+        unresolved = cv[0] in ("string", "raw") or fv[0] in ("string", "raw")
         if cv == fv:
-            matched.append((name, target, cv[1], how))
+            matched.append((key, target, cv[1], how))
             if how == "loose":
-                loose_hits.append((name, target))
+                loose_hits.append((key, target))
+        elif unresolved:
+            unsupported.append((key, target, cv[1], fv[1]))
         else:
-            mismatched.append((name, target, cv, fv, entry.get("where")))
+            mismatched.append((key, target, cv, fv, entry.get("where")))
 
-    missing_code = [k for k in sorted(figma) if k not in used_figma and not k.startswith("_")]
+    ignore_figma = cfg.get("ignoreFigma", [])
+    def waived(name: str) -> bool:
+        return any(name == p or name.startswith(p.rstrip("*")) for p in ignore_figma)
 
-    total = len(matched) + len(mismatched) + len(missing_figma)
+    missing_code = [k for k in sorted(figma)
+                    if k not in used_figma and not k.startswith("_") and not waived(k)]
+    waived_figma = [k for k in sorted(figma) if k not in used_figma and waived(k)]
+
+    total = len(matched) + len(mismatched) + len(missing_figma) + len(unsupported)
     print(f"{VERSION}  code={args.code.name}  figma={args.figma.name}")
-    print(f"  compared      : {total} tokens from code against {len(figma)} Figma variables")
+    print(f"  in code       : {len(code)} tokens  (compared: {total})")
     print(f"  value-exact   : {len(matched)}")
     print(f"  MISMATCHED    : {len(mismatched)}")
+    print(f"  uncomparable  : {len(unsupported)}")
     print(f"  missing in Figma : {len(missing_figma)}")
-    print(f"  extra in Figma   : {len(missing_code)}")
+    print(f"  extra in Figma   : {len(missing_code)}" + (f"  ({len(waived_figma)} waived)" if waived_figma else ""))
 
     if mismatched:
         print("\n  MISMATCHED — same name, different value:")
@@ -252,6 +363,12 @@ def main() -> int:
         print("  was renamed. Neither is harmless:")
         for n in missing_code:
             print(f"    {n}")
+    if unsupported:
+        print("\n  UNCOMPARABLE — neither side parses into a comparable value. Usually a")
+        print("  DTCG alias ({color.brand.500}), a composite token, or a var() reference.")
+        print("  Resolve these before the diff; do NOT read them as mismatches:")
+        for key, target, cv, fv in unsupported:
+            print(f"    {key}  ->  {target}\n        code : {cv}\n        figma: {fv}")
     if loose_hits:
         print("\n  Matched only by loose comparison. Add an explicit entry to the map file")
         print("  so this does not depend on a spelling coincidence:")
@@ -260,7 +377,7 @@ def main() -> int:
     if matched and not args.quiet_matches and not (mismatched or missing_figma or missing_code):
         print(f"\n  {len(matched)}/{len(matched)} value-exact. Colour comparisons include alpha.")
 
-    ok = not (mismatched or missing_figma or missing_code)
+    ok = not (mismatched or missing_figma or missing_code or unsupported)
     if not ok:
         print("\n  NOT value-exact. Do not report this as done, and do not report a count —")
         print("  a count is what this script exists to stop you relying on.")

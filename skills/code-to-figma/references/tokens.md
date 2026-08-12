@@ -18,9 +18,15 @@ finds things nobody was looking for.
    names mirroring the code (`textPrimaryInverse` → `text/primary-inverse`,
    `spacing16` → `spacing/16`), scopes set so the picker stays usable.
    Record every variable key in the registry as you create it.
-3. **Dump them back out.** `getLocalVariablesAsync()` plus `valuesByMode`, or
-   the MCP variable-defs call. Read the values back from Figma — do not assume
-   the write did what you asked.
+3. **Dump them back out** and write the dump to a file. Read the values back
+   from Figma — do not assume the write did what you asked.
+
+   Use the plugin API: `getLocalVariablesAsync()`, then for each variable keep
+   `{name, resolvedType, valuesByMode}`. **This is the only method that
+   enumerates a collection.** The MCP variable-defs call takes a node id and
+   returns only the variables that node consumes — reaching for it because it
+   is cheaper produces a partial dump, and every variable it did not see is
+   then reported as missing.
 4. **Diff.** `token_diff.py --code … --figma …`. Exit 0 or it is not done.
 
 ## Never report a count

@@ -110,6 +110,69 @@ echo "$OUT" | grep -q "overlayScrim" \
   && ok "a lost alpha channel is caught (r,g,b were identical)" \
   || bad "a lost alpha channel is caught" "$OUT"
 
+# Findings from the adversarial audit, 2026-08-13. Each of these was a real
+# defect in this script; they are locked down here so they cannot come back.
+python3 - "$HERE" <<'PY' && ok "audit: family-qualified keys — two families sharing a leaf name no longer eat each other" || bad "family collision" "spacing.sm and radius.sm collapsed to one token — silent loss in the script that exists to stop counts standing in for comparisons"
+import sys, json, tempfile, os, importlib.util
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("td", sys.argv[1] + "/token_diff.py")
+td = importlib.util.module_from_spec(spec); spec.loader.exec_module(td)
+p = tempfile.mktemp(suffix=".json")
+open(p, "w").write(json.dumps({"spacing": {"sm": {"value": "8px"}}, "radius": {"sm": {"value": "4px"}}}))
+n = len(td.read_code(Path(p))); os.remove(p)
+sys.exit(0 if n == 2 else 1)
+PY
+
+python3 - "$HERE" <<'PY' && ok "audit: already-separated names map every separator to a slash" || bad "rule_map on kebab/dot" "color-text-primary must become color/text/primary, as stacks/web.md promises"
+import sys, importlib.util
+spec = importlib.util.spec_from_file_location("td", sys.argv[1] + "/token_diff.py")
+td = importlib.util.module_from_spec(spec); spec.loader.exec_module(td)
+sys.exit(0 if (td.rule_map("color-text-primary") == "color/text/primary"
+               and td.rule_map("color.text.primary") == "color/text/primary"
+               and td.rule_map("textPrimaryInverse") == "text/primary-inverse"
+               and td.rule_map("spacing16") == "spacing/16") else 1)
+PY
+
+python3 - "$HERE" <<'PY' && ok "audit: rgb() / rgba() / hsl() / bare-HSL all normalize like hex" || bad "colour formats" "web token files are mostly not hex; unparsed values were being reported as mismatches"
+import sys, importlib.util
+spec = importlib.util.spec_from_file_location("td", sys.argv[1] + "/token_diff.py")
+td = importlib.util.module_from_spec(spec); spec.loader.exec_module(td)
+ok = (td.normalize("rgb(59,110,245)") == td.normalize("#3b6ef5")
+      and td.normalize("rgba(26,26,26,0.48)")[0] == "color"
+      and td.normalize("hsl(220 90% 60%)")[0] == "color"
+      and td.normalize("220 90% 60%")[0] == "color")
+sys.exit(0 if ok else 1)
+PY
+
+TMP=$(mktemp -d)
+echo '{"color":{"brand":{"value":"{color.base.500}"}}}' > "$TMP/code.json"
+echo '{"color/brand":"#ff0000"}' > "$TMP/figma.json"
+OUT=$(py "$HERE/token_diff.py" --code "$TMP/code.json" --figma "$TMP/figma.json")
+echo "$OUT" | grep -q "UNCOMPARABLE" \
+  && ok "audit: an unresolved DTCG alias is 'uncomparable', not a mismatch" \
+  || bad "uncomparable bucket" "calling an alias a mismatch sends someone to change a correct Figma variable:
+$OUT"
+
+echo '{"color":{"brand":{"value":"#ff0000"}}}' > "$TMP/code.json"
+echo '{"color/brand":"#ff0000","legacy/old":"#00ff00"}' > "$TMP/figma.json"
+py "$HERE/token_diff.py" --code "$TMP/code.json" --figma "$TMP/figma.json" >/dev/null
+[[ $? -ne 0 ]] && ok "audit: an unowned Figma variable fails the gate by default" || bad "extra-in-figma fails" ""
+echo '{"ignoreFigma":["legacy/"]}' > "$TMP/map.json"
+py "$HERE/token_diff.py" --code "$TMP/code.json" --figma "$TMP/figma.json" --map "$TMP/map.json" >/dev/null
+[[ $? -eq 0 ]] \
+  && ok "audit: ignoreFigma waives it explicitly, so a pre-existing library does not block P1 forever" \
+  || bad "ignoreFigma waiver" ""
+rm -rf "$TMP"
+
+TMP=$(mktemp -d)
+printf 'static let legacy = Color(UIColor(red: 0.1, green: 0.2, alpha: 1.0))\n' > "$TMP/C.swift"
+echo '{"color":[{"glob":"*.swift","preset":"swift-color"}]}' > "$TMP/cfg.json"
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/cfg.json" --root "$TMP")
+echo "$OUT" | grep -q "alpha: 1.0" \
+  && ok "audit: swift-color balances nested parens instead of truncating the value" \
+  || bad "swift-color truncation" "$OUT"
+rm -rf "$TMP"
+
 # 0xAARRGGBB from code must equal #RRGGBBAA from Figma.
 python3 - "$HERE" <<'PY' && ok "0xAARRGGBB and Figma rgba normalize to the same value" || bad "alpha-first vs alpha-last normalization" "see token_diff.norm_color"
 import sys, importlib.util

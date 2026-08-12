@@ -21,7 +21,7 @@ Reference image naming: `{{NAMING_PATTERN}}` in `{{EVIDENCE_DIR}}`
 
 ## Definition of DONE — screens tier
 
-A screen is done when **all eight** hold:
+A screen is done when **all seven** hold:
 
 1. Master component created
 2. Every state frame created
@@ -30,7 +30,10 @@ A screen is done when **all eight** hold:
 5. Deviations logged
 6. Instance placed on the Flow page
 7. Node IDs written into the registry
-8. A named version saved in Figma
+
+Naming a Figma version is a **phase checkpoint**, not a per-screen step — the
+plugin API cannot do it, so it costs a human interruption each time. Record it
+in the phase table below, not here.
 
 <!-- Components tier: conditions 6 and 8 do not apply — DONE is the other six.
      Tokens tier: replace this list entirely with the token block below. -->
@@ -47,9 +50,10 @@ Per token family:
 
 ## Progress
 
-| Phase | Status | Date |
-|---|---|---|
-| P0 Gates | ⬜ | |
+| Phase | Status | Date | Figma version named |
+|---|---|---|---|
+| P-1 Catalog | ⬜ | | OPTIONAL — only if one was built |
+| P0 Gates | ⬜ | | |
 | P1 Foundations | ⬜ | |
 | P2 Assets | ⬜ | |
 | P3 Component kit | ⬜ | |

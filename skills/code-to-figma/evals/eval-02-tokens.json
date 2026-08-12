@@ -16,5 +16,6 @@
     "Does not say '7/7 tokens present' or otherwise report the count as evidence of success",
     "Treats the value mismatch as a question to resolve (which side is right?) rather than editing Figma to match code or code to match Figma without asking"
   ],
-  "baseline_failure": "Compares the two name lists, sees 7 and 7 with identical names, and reports that the push is complete and matching. This is the exact defect the script exists to prevent: the count is right, the names are right, and two values are wrong."
+  "baseline_failure": "Compares the two name lists, sees 7 and 7 with identical names, and reports that the push is complete and matching. This is the exact defect the script exists to prevent: the count is right, the names are right, and two values are wrong.",
+  "known_weakness": "Measured 2026-08-13: this eval does NOT discriminate as written. Pointing the agent at the fixtures directory hands it token_diff.py, which the baseline found and ran unprompted — so both sides caught both mismatches. What the skill still changed was the framing: the with-skill run led with 'never report this as a token count' and named the count trap explicitly, where the baseline reported it as an ordinary diff. To make this eval discriminate, copy the two JSON files somewhere with no script beside them. Kept as-is and documented rather than quietly rewritten, because the result is real: the script is the load-bearing part, and an agent that finds it succeeds without the prose."
 }

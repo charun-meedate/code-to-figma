@@ -4,8 +4,10 @@
 
 1. Export the frame from Figma at 1×.
 2. Downscale the reference by its scale factor with LANCZOS.
-3. `image_diff.py --ref … --fig …` — it reports mean difference, percentage
-   over threshold, and **the rows that differ, merged into bands**.
+3. `image_diff.py --ref … --fig … --out diff.png` — it reports mean difference,
+   percentage over threshold, and **the rows that differ, merged into bands**.
+   Pass `--out` every time: without it no composite is written, and step 5
+   below is the whole judgement.
 4. **PASS only when every band lies on a row of text.** A band on a card edge,
    a button edge, an input border or an image boundary is structural drift, at
    any percentage.

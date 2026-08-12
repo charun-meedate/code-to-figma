@@ -28,13 +28,17 @@ run in about ten minutes per screen.
 
 1. **Layout structure** mirrors the real component tree — a column in code is
    a vertical auto-layout in Figma, a row is horizontal, a stack is absolute.
-2. **Spacing / padding / gap** match the spacing tokens in
-   {{TOKEN_SOURCE_SPACING}} — every value, no approximations.
+2. **Spacing, padding, gap and radius** match the tokens in
+   {{TOKEN_SOURCE_SPACING}} — every value, no approximations. (Radius often
+   lives in the same file as spacing; if this project separates them, name
+   both sources here.)
 3. **Colour** — every fill and stroke is bound to a variable whose value
    equals the token in {{TOKEN_SOURCE_COLOR}}.
-4. **Radius, stroke weight, shadow** match {{TOKEN_SOURCE_COMPONENT}}.
-   <!-- if a family is absent in code (e.g. no shadow tokens), say so here and
-        cite the finding ID rather than inventing one -->
+4. **Stroke weight and shadow** match {{TOKEN_SOURCE_SHADOW}}.
+   <!-- If a family is absent in code — no shadow tokens, shadows inline —
+        write "absent, see finding <id>" instead of a source. Do not leave a
+        criterion the project cannot satisfy: a permanently failing row teaches
+        everyone to ignore the document. -->
 5. **Text styles** — family, size, weight, line-height and letter-spacing all
    match {{TOKEN_SOURCE_TYPOGRAPHY}}.
 6. **Icon and asset geometry** — real asset files imported from

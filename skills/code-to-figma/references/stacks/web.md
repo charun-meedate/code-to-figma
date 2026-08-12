@@ -14,10 +14,28 @@ recommendation rather than a measured result, it says so.
 |---|---|---|
 | **W3C DTCG** `tokens.json` with `$value` | anywhere; often `tokens/` | `dtcg-json` |
 | **CSS custom properties** | `:root {}` in a global stylesheet | `css-custom-property` |
-| **Tailwind** | `tailwind.config.*` under `theme.extend` | `js-object-string` / `js-object-number` |
-| **MUI / Chakra** | `createTheme(` / `extendTheme(` | `js-object-string` |
-| **styled-components / Emotion** | a `theme.ts` object export | `js-object-string` |
-| **Panda, Stitches, vanilla-extract** | their config or `createTheme` call | `js-object-string` |
+| **Tailwind** | `tailwind.config.*` under `theme.extend` | see below — **not** a regex |
+| **MUI / Chakra** | `createTheme(` / `extendTheme(` | see below — **not** a regex |
+| **styled-components / Emotion** | a `theme.ts` object export | see below |
+| **Panda, Stitches, vanilla-extract** | their config or `createTheme` call | see below |
+
+**Nested theme objects cannot be regexed, and failing at it is silent.** The
+`js-object-*` presets capture the leaf key only, so `brand.500` and
+`accent.500` both extract as `500`, the second is dropped with a
+"declared twice" warning that reads like harmless dedup, and the diff then
+compares a partial set and calls it clean. Use them only for a genuinely flat
+object.
+
+For anything nested, have the project print its resolved theme as JSON and
+walk that instead — the values are already resolved, which also solves the
+alias problem below:
+
+```bash
+node -e "const t=require('./tailwind.config.js');console.log(JSON.stringify((t.default||t).theme.extend))" > /tmp/theme.json
+```
+
+Then extract with a small walk that joins the key path with `/`, the way the
+`dtcg-json` handler already does.
 
 Three things that catch people out:
 
@@ -58,15 +76,39 @@ lighter).
 
 ## Images
 
-`@storybook/test-runner` with Playwright is the standard path:
+`@storybook/test-runner` with Playwright is the standard path. **A static build
+does not serve itself** — the runner needs something listening on the URL you
+give it:
 
 ```bash
 npx playwright install --with-deps chromium
 npm run build-storybook
-npx test-storybook --url http://127.0.0.1:6006 --maxWorkers=2
+npx concurrently -k -s first \
+  "npx http-server storybook-static --port 6006 --silent" \
+  "npx wait-on tcp:6006 && npx test-storybook --url http://127.0.0.1:6006 --maxWorkers=2"
 ```
 
-Capture per story with `page.screenshot`. Then, before trusting a single diff:
+**The runner takes no screenshots by default and hands you no `page`.** All of
+it — the capture, and all four guards below — goes in a `postVisit` hook in
+`.storybook/test-runner.ts`:
+
+```ts
+import type { TestRunnerConfig } from "@storybook/test-runner";
+const config: TestRunnerConfig = {
+  async postVisit(page, context) {
+    await page.addStyleTag({ content: `*,*::before,*::after{
+      animation:none!important;transition:none!important;caret-color:transparent!important}` });
+    await page.evaluate(() => document.fonts.ready);
+    const buf = await page.screenshot({ path: `gallery/${context.id}.png` });
+    if (buf.length < 1000) throw new Error(`blank capture: ${context.id}`);
+  },
+};
+export default config;
+```
+
+Check the Storybook major first: on 9, `@storybook/test-runner` is the legacy
+path and a freshly initialized project gets the Vitest addon instead. Then,
+before trusting a single diff:
 
 - **Freeze animation and transitions.** A CSS transition mid-flight makes the
   same story produce a different image every run and turns every comparison
