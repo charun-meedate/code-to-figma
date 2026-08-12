@@ -2,7 +2,7 @@
 
 <!--
   Instantiated from the code-to-figma skill.
-  Provenance: poppa-notes/uxui-50/acceptance-criteria.md.
+  Provenance: the reference programme's acceptance-criteria.md.
   Sections A–D scale with the scope tier chosen at intake — delete the blocks
   marked for tiers you are not doing, and record that in §D.
 -->

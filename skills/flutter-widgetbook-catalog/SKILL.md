@@ -97,7 +97,7 @@ Force documentation through the type system with a factory whose docs are
 required parameters:
 
 ```dart
-WidgetbookComponent poppaComponent({
+WidgetbookComponent documentedComponent({
   required String name,
   required String whenToUse,     // required → no story ships undocumented
   required List<String> props,

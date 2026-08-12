@@ -3,7 +3,7 @@
 <!--
   Instantiated from the code-to-figma skill. Generalized from a real programme
   that mirrored 16 screens / 59 frames of a Flutter app into Figma
-  (provenance: poppa-notes/uxui-50/GROUND-TRUTH-RULES.md, Aug 2026).
+  (provenance: the reference programme's GROUND-TRUTH-RULES.md, Aug 2026).
   Fill every {{PLACEHOLDER}} from project-profile.json before the first session.
   Delete sections marked OPTIONAL if they do not apply — but delete them
   deliberately, and say why in the Decisions section.

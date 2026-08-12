@@ -29,7 +29,7 @@ demonstrate a layout bug loses the bug the moment it gains a break point. Use
 this on paragraphs that should wrap, not on single-line text the real product
 clips.
 
-Provenance: generalized from poppa-notes/uxui-50/thai_seg.py.
+Provenance: generalized from the reference programme's Thai segmenter.
 """
 from __future__ import annotations
 

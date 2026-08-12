@@ -2,7 +2,7 @@
 
 <!--
   Instantiated from the code-to-figma skill.
-  Provenance: poppa-notes/uxui-50/deviation-log.md.
+  Provenance: the reference programme's deviation-log.md.
 -->
 
 Every place where Figma does not match the code or the reference image gets a

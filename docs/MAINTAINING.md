@@ -103,8 +103,8 @@ selftest ตรวจ schema ของ templates อยู่ ถ้าจะแ
 ## เรื่อง skill Flutter 2 ตัว
 
 `flutter-widgetbook-catalog` และ `flutter-catalog-page-stories` เดิมอยู่กระจัดกระจายใน
-`~/.claude/skills/` และใน repo poppa · **ตอนนี้ repo นี้คือต้นฉบับหลัก** ที่อื่นถือว่าเป็นสำเนา
-ที่ install ออกไป
+`~/.claude/skills/` และในโปรเจกต์ที่ใช้งานจริง · **ตอนนี้ repo นี้คือต้นฉบับหลัก**
+ที่อื่นถือว่าเป็นสำเนาที่ install ออกไป
 
 อัปเดตเครื่องตัวเองให้ตรงกับ repo:
 

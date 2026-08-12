@@ -2,7 +2,7 @@
 
 <!--
   Instantiated from the code-to-figma skill.
-  Provenance: poppa-notes/uxui-50/screen-checklist.md.
+  Provenance: the reference programme's screen-checklist.md.
   Keep the block for your scope tier and delete the others.
   Counts are ENUMERATED from the evidence base, never estimated. Until you have
   counted, write ‹MEASURING›.

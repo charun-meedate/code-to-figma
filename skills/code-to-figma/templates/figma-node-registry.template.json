@@ -1,6 +1,6 @@
 {
   "_readme": "Registry of every Figma node, variable and style ID this programme created. Update it after every use_figma create/edit. Your context will be compacted — THIS FILE is the truth, not your memory. At the start of every session, get_metadata the file and confirm these IDs still resolve; if one is missing, STOP and ask the owner. Never silently recreate a node: a human may have moved or deleted it on purpose.",
-  "_provenance": "code-to-figma skill; schema from poppa-notes/uxui-50/figma-node-registry.json",
+  "_provenance": "code-to-figma skill; schema from the reference programme's figma-node-registry.json",
 
   "file": {
     "name": "{{FIGMA_FILE_NAME}}",

@@ -28,7 +28,7 @@ version string is printed with every report for exactly that reason: if a
 number moves between sessions, check the version before concluding the work
 got worse.
 
-Provenance: the diff recipe used in poppa-notes/uxui-50 (screenshot → LANCZOS
+Provenance: the diff recipe used on the reference programme (screenshot → LANCZOS
 downscale of the @2x reference → numpy per-row band analysis), made permanent.
 """
 from __future__ import annotations

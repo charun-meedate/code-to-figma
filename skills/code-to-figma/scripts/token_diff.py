@@ -32,7 +32,7 @@ NAME MAPPING, in order:
   3. loose compare — strip case and separators    (reported as a match that needs
                                                    an explicit entry, never silent)
 
-Provenance: the method used for UXUI-42 (dump every variable from Figma, parse
+Provenance: the method proven on the reference programme (dump every variable from Figma, parse
 the same values out of the source files, diff by script), made permanent — the
 original was written once and thrown away.
 """

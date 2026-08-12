@@ -1,6 +1,6 @@
 {
   "meta": {
-    "_provenance": "code-to-figma skill; schema from poppa-notes/uxui-50/flow-edges.json",
+    "_provenance": "code-to-figma skill; schema from the reference programme's flow-edges.json",
     "programme": "{{PROJECT_NAME}}",
     "flow": "{{FLOW_NAME}}",
     "theme": "{{THEME}}",
