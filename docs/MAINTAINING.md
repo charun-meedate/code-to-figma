@@ -6,11 +6,11 @@
 
 ```
 skills/code-to-figma/
-├── SKILL.md          ตัวหลัก ≤280 บรรทัด — intake + branching + กฎ + ชี้ไป references
+├── SKILL.md          ตัวหลัก ~230 บรรทัด — intake + branching + กฎ + ชี้ไป references
 ├── references/       คู่มือละเอียด โหลดเฉพาะตอนที่ต้องใช้ (14 ไฟล์ รวม stacks/)
 ├── templates/        ไฟล์ที่ copy เข้าไป "ในโปรเจกต์ปลายทาง" ไม่ใช่เอกสารของ skill
 ├── scripts/          4 สคริปต์ + fixtures + selftest
-└── evals/            ทดสอบ "พฤติกรรม" ของ agent ไม่ใช่ทดสอบโค้ด
+└── evals/            ทดสอบ "พฤติกรรม" ของ agent ไม่ใช่ทดสอบโค้ด (5 ข้อ + react fixture)
 skills/flutter-widgetbook-catalog/    absorbed มาแล้ว — repo นี้คือต้นฉบับหลัก
 skills/flutter-catalog-page-stories/  absorbed มาแล้ว — repo นี้คือต้นฉบับหลัก
 ```
@@ -42,7 +42,7 @@ skills/flutter-catalog-page-stories/  absorbed มาแล้ว — repo น�
 ./skills/code-to-figma/scripts/selftest.sh
 ```
 
-33 ข้อ ไม่ต้องต่อเน็ต ไม่ต้องมี Figma ไม่ต้องมีโปรเจกต์ · **รันสองรอบ**
+45 ข้อ ไม่ต้องต่อเน็ต ไม่ต้องมี Figma ไม่ต้องมีโปรเจกต์ · **รันสองรอบ**
 (สีเขียวรอบเดียวไม่นับว่าเขียว — เคยเจอมาแล้วว่า commit ที่รายงานว่าเขียว แดงสลับ)
 
 ข้อที่จะ skip ถ้าเครื่องไม่พร้อม: segmentation (ต้องมี PyICU หรืออยู่บน macOS) และ
