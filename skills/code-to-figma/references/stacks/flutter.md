@@ -44,6 +44,24 @@ Presets: `dart-color` for the constructor call, `dart-double` for numbers. Note
 that declarations and values live in different places in a `ThemeExtension` —
 extract from the **assignment**, not the declaration.
 
+**A mature Flutter design system is often three layers, not one:**
+
+| Layer | Shape | Preset |
+|---|---|---|
+| Primitives | `class AppPalette { static const neutralLevel00 = Color(0xFF0D0D0D); }` | `dart-color` |
+| Theme-blind statics | `static const white = AppPalette.white;` | `dart-ref` |
+| Semantic, per mode | `factory AppColorsTheme.light() => AppColorsTheme(textDefault: AppPalette.neutralLevel00, …)` | `dart-ref`, bounded to one factory with `between` |
+
+The middle and outer layers hold **references, not values** — a Dart
+identifier is an alias exactly as `var(--x)` is, and `--resolve-aliases`
+follows both. Extract the palette in the same run or nothing resolves. One
+field-tested codebase had 226 such references and read as 100% comparable once
+the palette was included and the light factory bounded.
+
+Bound the factory, not the file: `["factory AppColorsTheme\\.light\\(\\)",
+"factory AppColorsTheme\\.dark\\(\\)"]`. Without it you get whichever mode
+appears first, silently.
+
 **Light and dark schemes normally sit in one file under the same token names**,
 so bound the extraction or you silently take whichever comes first:
 
@@ -122,6 +140,8 @@ Check which router the project actually uses before assuming:
 | `auto_route` | the generated router file |
 | **GetX** (`package:get`) | a `app_pages.dart` / `getPages` list — a real route table; then `Get.to`/`Get.offNamed` call sites. GetX also supplies DI and state, so a GetX project needs none of the get_it or bloc harness advice above |
 | plain `Navigator` | `onGenerateRoute`, plus `Navigator.push` call sites — the most work to trace, since there is no table |
+
+**Two routers in one pubspec is common and is not a contradiction** — a field-tested project declared both `get` and `go_router`. Usually one is legacy or is pulled in for its non-routing features (GetX also supplies DI and state). Find which one actually builds the routes before tracing, and say which you traced.
 
 For `go_router`, the route tree plus the redirect guard, plus the navigation
 calls in each screen's state layer. The guard is worth its own node in

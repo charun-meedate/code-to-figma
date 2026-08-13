@@ -63,6 +63,12 @@ PRESETS: dict[str, dict[str, str]] = {
                  "constructor call, and `static const textPrimary = Color(0xff182230)` in a "
                  "plain holder class",
     },
+    "dart-ref": {
+        "pattern": r"(?P<name>\w+)\s*[:=]\s*(?P<value>[A-Z]\w*\.\w+)\s*[,;)]",
+        "about": "Dart semantic layer: `textDefault: AppPalette.neutralLevel00` — the value is a "
+                 "reference to a primitive, not a literal. Pair with --resolve-aliases and a "
+                 "source for the palette itself",
+    },
     "dart-double": {
         "pattern": r"(?P<name>\w+)\s*:\s*(?P<value>-?\d+(?:\.\d+)?)\s*[,)]",
         "about": "Dart: `spacing16: 16,` — spacing, sizes and radii usually share one file",
@@ -245,7 +251,13 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
     return found
 
 
-_REF = re.compile(r"^\s*(?:var\(\s*--([\w-]+)\s*\)|\{([\w.-]+)\})\s*$")
+_REF = re.compile(
+    r"^\s*(?:"
+    r"var\(\s*--([\w-]+)\s*\)"      # CSS custom property
+    r"|\{([\w.-]+)\}"                 # DTCG alias
+    r"|([A-Z]\w*\.\w+)"               # Dart/Kotlin/Swift identifier: AppPalette.neutralLevel00
+    r")\s*$"
+)
 
 
 def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
@@ -291,7 +303,7 @@ def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
 
                 m = _REF.match(v)
                 if m:
-                    ref = (m.group(1) or m.group(2) or "").lower()
+                    ref = (m.group(1) or m.group(2) or m.group(3) or "").lower()
                     hit = lookup(ref)
                     if not hit or hit == (family, name):
                         continue

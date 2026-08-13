@@ -211,6 +211,24 @@ import json, sys
 j = json.load(open(sys.argv[1]))
 sys.exit(0 if j["color"]["primary/DEFAULT"]["value"] == "#e32321" else 1)
 PY
+
+# An alias is not only a CSS thing. A Dart semantic layer points at a palette
+# by identifier — 226 such references in one field-tested codebase.
+cat > "$TMP/pal.dart" <<'EOF'
+class AppPalette { static const neutralLevel00 = Color(0xFF0D0D0D); }
+EOF
+cat > "$TMP/sem.dart" <<'EOF'
+factory AppColorsTheme.light() { return AppColorsTheme( textDefault: AppPalette.neutralLevel00, ); }
+EOF
+cat > "$TMP/dart.json" <<'EOF'
+{"color":[{"glob":"pal.dart","preset":"dart-color"},{"glob":"sem.dart","preset":"dart-ref"}]}
+EOF
+py "$HERE/extract_tokens.py" --config "$TMP/dart.json" --root "$TMP" --resolve-aliases --out "$TMP/d.json" >/dev/null
+python3 - "$TMP/d.json" <<'PY' && ok "field test: a Dart identifier reference resolves like a CSS var()" || bad "dart-ref resolution" "AppPalette.neutralLevel00 must reach 0xFF0D0D0D"
+import json, sys
+j = json.load(open(sys.argv[1]))
+sys.exit(0 if j["color"]["textDefault"]["value"] == "0xFF0D0D0D" else 1)
+PY
 echo "$OUT" | grep -q "still unresolved" \
   && bad "self-reference guard" "a path-named entry claimed its own alias key and resolved to itself" \
   || ok "field test: a path-named entry does not claim its own alias key"
