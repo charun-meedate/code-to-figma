@@ -217,10 +217,12 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
                 # as a clean comparison.
                 print(f"  ⚠ [{family}] {name} declared twice — {found[name]['file']}:"
                       f"{found[name]['line']} and {rel}:{line}. Taking the first.\n"
-                      f"      Usually one of two causes: the file holds LIGHT AND DARK under the "
-                      f"same names (bound it with `between`, or you silently get one mode), or the "
-                      f"source is a NESTED object and the pattern is losing the key path (dump the "
-                      f"resolved theme to JSON and walk it instead).", file=sys.stderr)
+                      f"      Three usual causes: the file holds LIGHT AND DARK under the same "
+                      f"names (bound it with `between`, or you silently get one mode); the name is "
+                      f"DEFINED in one block and BRIDGED in another (Tailwind v4 `:root` plus "
+                      f"`@theme inline` — extract the definitions, model the bridge as references); "
+                      f"or the source is a NESTED object and the pattern is losing the key path "
+                      f"(dump the resolved theme to JSON and use format json-tree).", file=sys.stderr)
                 continue
             found[name] = {"value": value, "file": rel, "line": line}
 

@@ -69,6 +69,9 @@ in scope before anything else, and record it as `stack.monorepoPackage`.
 - JS: the `packageManager` field wins; otherwise the lockfile
   (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock` **or** `bun.lockb` → bun — bun moved from the binary `.lockb` to a text `bun.lock`, so checking only the old name reads a current bun project as npm; else npm).
   Record `scripts.dev`, `scripts.build`, `scripts.storybook`, `scripts.test`.
+  **Two lockfiles is common and is not a tie** — a repo carrying both `bun.lock`
+  and `package-lock.json` usually has one that CI actually installs from. Read
+  the Dockerfile or the CI config before choosing, and confirm with the human.
 - Note which environment variables the app refuses to start without, and what
   a safe placeholder is. A catalog build that cannot boot is not a catalog.
 
@@ -119,6 +122,13 @@ Also record whether it can produce images today: `@storybook/test-runner` or
 `playwright` in dependencies, a `test-storybook` script, or an existing
 screenshot/golden test on the Flutter side. A catalog with no export is half
 the instrument.
+
+**Look for an existing visual spec before concluding there is no evidence
+base.** A project with no catalog may already screenshot its key routes from an
+e2e suite — grep the e2e directory for `page.screenshot`. One field-tested
+codebase had exactly that: six routes at two viewports, with auth state and API
+stubbing per route, and a non-empty-file assertion. That is most of the
+instrument already built, by someone who never called it one.
 
 ## D5 · What a harness would have to stand in for
 

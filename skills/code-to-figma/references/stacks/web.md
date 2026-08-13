@@ -155,9 +155,20 @@ before trusting a single diff:
 - **Pin the device pixel ratio** and record it as `referenceScale`. This is the
   ÷2 trap in its web form.
 - **Guard against blank captures.** A story that threw during render still
-  produces a valid PNG of nothing.
+  produces a valid PNG of nothing. Asserting the file is over ~1KB catches it.
 - Set a fixed viewport per story kind — a component grid and a full page want
   different surfaces.
+- **Capture the viewport, not `fullPage`.** A full-page capture is as tall as
+  its content, so its height moves with the data and it can never line up with
+  a fixed Figma frame — the diff refuses it outright. `fullPage: true` is right
+  for regression triage and wrong for design comparison. A field-tested project
+  had exactly that: a well-built visual-smoke spec, unusable for frame
+  comparison for that one reason.
+
+Seen in the wild and worth copying: auth state and API stubs applied **per
+route** before each capture, so every screenshot is a chosen state rather than
+whatever the backend happened to return. That is the piece that makes web
+capture competitive with a catalog.
 
 ## Flow tracing
 

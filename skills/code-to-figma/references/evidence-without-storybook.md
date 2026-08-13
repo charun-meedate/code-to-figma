@@ -30,13 +30,31 @@ Whatever the channel, always **read back where the app actually landed.** A
 router guard may have sent it somewhere else, and a screenshot of the wrong
 screen is worse than no screenshot.
 
-Limits, and they are not small:
+Limits, and they are not small — **on native.** Read the web note below before
+applying them there.
 
 - **Error, empty and loading states are mostly unreachable.** You cannot ask a
   live backend to fail on demand.
 - **Data varies between captures**, so a strict image comparison produces noise.
   Compare structure — order, spacing rhythm, colour, type, presence and
   absence of elements — not pixels.
+
+### On the web, those two limits mostly do not apply
+
+This page originally stated them as universal. That was wrong, and a real
+codebase corrected it: a browser lets you intercept every request, so a
+Playwright run can return a 404, an empty list or a slow response on demand,
+and can set auth state per route. The field-tested project did exactly that —
+six routes at two viewports, each with its own auth state and API stubs, plus
+an empty-state spec alongside.
+
+So on the web the no-catalog path is **much closer to a catalog than the rest
+of this page implies**: you get forced states and deterministic data. What you
+still do not get is a component in isolation, or the exhaustive enumeration a
+drift check gives you. Say that, rather than the two limits above.
+
+If you find a project already screenshotting its routes in an e2e suite, that
+is your evidence base — do not propose building a catalog before looking.
 - **You need a reachable environment and a test account.** On the proven run
   the development environment pointed at a host that did not resolve, which
   was enough for the pre-login screens and stopped everything after them.
