@@ -177,9 +177,11 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
                 # is silent data loss, and the diff downstream reports a partial set
                 # as a clean comparison.
                 print(f"  ⚠ [{family}] {name} declared twice — {found[name]['file']}:"
-                      f"{found[name]['line']} and {rel}:{line}. Taking the first. If this "
-                      f"source is a NESTED object, the pattern is losing the key path: dump "
-                      f"the resolved theme to JSON and walk it instead.", file=sys.stderr)
+                      f"{found[name]['line']} and {rel}:{line}. Taking the first.\n"
+                      f"      Usually one of two causes: the file holds LIGHT AND DARK under the "
+                      f"same names (bound it with `between`, or you silently get one mode), or the "
+                      f"source is a NESTED object and the pattern is losing the key path (dump the "
+                      f"resolved theme to JSON and walk it instead).", file=sys.stderr)
                 continue
             found[name] = {"value": value, "file": rel, "line": line}
 

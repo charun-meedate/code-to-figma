@@ -44,7 +44,7 @@ instruction applies.
 |---|---|---|
 | 1 | `pubspec.yaml` containing a `flutter:` key | Flutter |
 | 2 | `package.json` with `react-native` or `expo` | **React Native** → `stacks/native-mobile.md`, not web |
-| 3 | `package.json` with `next` / `nuxt` / `@remix-run/*` / `astro` | Next / Nuxt / Remix / Astro → `stacks/web.md` |
+| 3 | `package.json` with `next` / `nuxt` / `@remix-run/*` / `@react-router/dev` / `astro` | Next / Nuxt / Remix / React Router framework mode / Astro → `stacks/web.md` |
 | 4 | `package.json` with `react`/`react-dom` / `vue` / `svelte` / `@angular/core` / `solid-js` | React / Vue / Svelte / Angular / Solid → `stacks/web.md` |
 | 5 | `*.xcodeproj`/`Package.swift` plus `import SwiftUI` | SwiftUI |
 | 6 | `build.gradle(.kts)` with `androidx.compose` **or** a `libs.versions.toml` declaring a compose coordinate | Compose |
@@ -81,7 +81,7 @@ way**.
 | Stack | Where to look, in order |
 |---|---|
 | Flutter | `ThemeExtension<…>` subclasses; `final Color …;` / `final TextStyle …;` / `final double …;` under `lib/**/{styles,theme,tokens}/`; `ColorScheme(`; `TextTheme(` |
-| React / web | `tokens.json` or `*.tokens.json` with `$value` (W3C DTCG); `--custom-property:` inside `:root {` in CSS/SCSS; `tailwind.config.*` under `theme.extend`; `createTheme(`/`extendTheme(` for MUI or Chakra; a `theme.ts` exporting an object of literals; `panda.config`, `stitches.config`, vanilla-extract `createTheme` |
+| React / web | `tokens.json` or `*.tokens.json` with `$value` (W3C DTCG); `--custom-property:` inside `:root {` or **`@theme {`** in CSS/SCSS (Tailwind v4 has no config file); `tailwind.config.*` under `theme.extend` (v3 only); `createTheme(`/`extendTheme(` for MUI or Chakra; a `theme.ts` exporting an object of literals; `panda.config`, `stitches.config`, vanilla-extract `createTheme` |
 | SwiftUI | `*.xcassets/**/Contents.json` colour sets; `extension Color`; `Font.custom(` |
 | Compose | `val X = Color(0xFF…)`; `Typography(`; `lightColorScheme(`/`darkColorScheme(` |
 

@@ -144,6 +144,24 @@ ok = (td.normalize("rgb(59,110,245)") == td.normalize("#3b6ef5")
 sys.exit(0 if ok else 1)
 PY
 
+# oklch is what Tailwind v4 and shadcn emit, so a current web project is mostly
+# this and nothing else. Reference values checked against the CSS Color 4 spec.
+python3 - "$HERE" <<'PY' && ok "field test: oklch() converts to sRGB correctly (Tailwind v4 / shadcn)" || bad "oklch conversion" "a modern web project is mostly oklch; getting this wrong silently shifts every colour"
+import sys, importlib.util
+spec = importlib.util.spec_from_file_location("td", sys.argv[1] + "/token_diff.py")
+td = importlib.util.module_from_spec(spec); spec.loader.exec_module(td)
+cases = {
+    "oklch(1 0 0)": "#ffffffff",
+    "oklch(0 0 0)": "#000000ff",
+    "oklch(0.646 0.222 41.116)": "#f54900ff",   # shadcn chart-1
+    "oklch(1 0 0 / 50%)": "#ffffff80",
+}
+bad_ = {k: td.normalize(k)[1] for k, v in cases.items() if td.normalize(k)[1] != v}
+if bad_:
+    print("  got:", bad_, file=sys.stderr)
+sys.exit(1 if bad_ else 0)
+PY
+
 TMP=$(mktemp -d)
 echo '{"color":{"brand":{"value":"{color.base.500}"}}}' > "$TMP/code.json"
 echo '{"color/brand":"#ff0000"}' > "$TMP/figma.json"

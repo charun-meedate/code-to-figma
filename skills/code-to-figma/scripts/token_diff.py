@@ -55,6 +55,31 @@ VERSION = "token_diff/1.0"
 
 # ---------------------------------------------------------------- value model
 
+def _oklch_to_rgb(L: float, C: float, H: float) -> tuple[int, int, int]:
+    """OKLCH -> sRGB. Tailwind v4 and shadcn write colours this way, so a
+    web project of any recent vintage is mostly oklch and nothing else.
+    Transform per the CSS Color 4 spec: OKLCH -> OKLab -> LMS -> linear sRGB.
+    """
+    import math
+
+    a = C * math.cos(math.radians(H))
+    b = C * math.sin(math.radians(H))
+    l_ = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
+    m_ = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
+    s_ = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3
+    lin = (
+        4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+        -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+        -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_,
+    )
+    out = []
+    for v in lin:
+        v = max(0.0, min(1.0, v))
+        v = 1.055 * (v ** (1 / 2.4)) - 0.055 if v > 0.0031308 else 12.92 * v
+        out.append(round(max(0.0, min(1.0, v)) * 255))
+    return tuple(out)
+
+
 def _hsl_to_rgb(h: float, s: float, light: float) -> tuple[int, int, int]:
     c = (1 - abs(2 * light - 1)) * s
     x = c * (1 - abs((h / 60) % 2 - 1))
@@ -79,6 +104,23 @@ def norm_color(v) -> str | None:
     if not isinstance(v, str):
         return None
     s = v.strip().lower()
+
+    ok = re.fullmatch(r"oklch\(\s*([^)]+)\)", s)
+    if ok:
+        parts = re.split(r"[,\s/]+", ok.group(1).strip())
+        nums = []
+        for p in parts:
+            if not p:
+                continue
+            try:
+                nums.append(float(p.rstrip("%")) / (100 if p.endswith("%") else 1))
+            except ValueError:
+                return None
+        if len(nums) < 3:
+            return None
+        r, g, b = _oklch_to_rgb(nums[0], nums[1], nums[2])
+        a = nums[3] if len(nums) > 3 else 1.0
+        return f"#{r:02x}{g:02x}{b:02x}{round(a * 255):02x}"
 
     # rgb()/rgba()/hsl()/hsla(), comma- or space-separated, with optional /alpha
     fn = re.fullmatch(r"(rgba?|hsla?)\(([^)]+)\)", s)

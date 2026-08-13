@@ -25,7 +25,8 @@ recommendation rather than a measured result, it says so.
 |---|---|---|
 | **W3C DTCG** `tokens.json` with `$value` | anywhere; often `tokens/` | `dtcg-json` |
 | **CSS custom properties** | `:root {}` in a global stylesheet | `css-custom-property` |
-| **Tailwind** | `tailwind.config.*` under `theme.extend` | see below — **not** a regex |
+| **Tailwind v4** | **`@theme` blocks in CSS** — there is no config file | `css-custom-property` |
+| **Tailwind v3** | `tailwind.config.*` under `theme.extend` | see below — **not** a regex |
 | **MUI / Chakra** | `createTheme(` / `extendTheme(` | see below — **not** a regex |
 | **styled-components / Emotion** | a `theme.ts` object export | see below |
 | **Panda, Stitches, vanilla-extract** | their config or `createTheme` call | see below |
@@ -48,7 +49,20 @@ node -e "const t=require('./tailwind.config.js');console.log(JSON.stringify((t.d
 Then extract with a small walk that joins the key path with `/`, the way the
 `dtcg-json` handler already does.
 
-Three things that catch people out:
+**Tailwind v4 moved the theme into CSS.** Looking for `tailwind.config.js` on a
+v4 project finds nothing and the obvious conclusion — "no Tailwind theme here"
+— is wrong. Check the CSS for `@theme` and `@theme inline`. Measured on a real
+shadcn + Tailwind v4 project: **531 custom properties across two files, of
+which only 43% were directly usable values** — the rest were `var()` aliases
+(260), `oklch()` (31) and `calc()` (6). Plan for that ratio before promising a
+token count.
+
+`@theme inline` in particular is *always* an alias layer: `--color-primary:
+var(--primary)`. The real values sit in a `:root` block, often in a different
+file. Extract the `:root` layer for values, and model the `@theme` layer as
+Figma variables that reference them.
+
+Three more things that catch people out:
 
 **A project can have two of these and mean one.** A Tailwind config that only
 re-exports CSS custom properties is not a second source — it is a view of the
@@ -137,7 +151,8 @@ before trusting a single diff:
 
 | Router | Where the graph is |
 |---|---|
-| react-router | the route objects / `<Routes>` tree; then `navigate(` and `<Link to=` call sites |
+| react-router v6 (library mode) | the route objects / `<Routes>` tree; then `navigate(` and `<Link to=` call sites |
+| react-router v7+ (framework mode) | **`app/routes.ts`** — a real route manifest, plus file conventions under `app/routes/`. Presence of `react-router.config.ts` and `@react-router/dev` is the tell. This is the old Remix, renamed |
 | Next app router | the `app/` directory structure; then `router.push(` and `<Link href=` |
 | Next pages router | `pages/`; same call sites |
 | vue-router | the routes array; `router.push`, `<router-link>` |
