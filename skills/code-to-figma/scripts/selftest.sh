@@ -274,6 +274,26 @@ echo "$OUT" | grep -q "color *2" \
 echo "$OUT" | grep -q "Families with no tokens found: shadow" \
   && ok "an absent family is reported as a finding, not filled in" \
   || bad "absent family is reported" "$OUT"
+
+# Both Dart idioms. A holder class of `static const x = Color(...)` is at least
+# as common as the ThemeExtension constructor form, and matched nothing.
+printf 'class AppColors {\n  static const bgColor = Color(0xffF0F5F9);\n  static const primaryRed = Color(0xFFE50913);\n}\n' > "$TMP/tok/holder.dart"
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/cfg.json" --root "$TMP")
+echo "$OUT" | grep -q "color *4" \
+  && ok "field test: dart-color reads both the ThemeExtension and the static-const idiom" \
+  || bad "dart-color idioms" "a holder class of static const Color(...) extracted nothing:
+$OUT"
+
+# THE ONE THAT MATTERS: a pattern matching nothing must not masquerade as an
+# absent family, because this skill treats an absent family as a finding.
+cat > "$TMP/bad.json" <<'EOF'
+{"color":[{"glob":"tok/holder.dart","pattern":"(?P<name>\\w+)\\s*:\\s*Color\\(\\s*(?P<value>0xDEADBEEF)\\s*\\)"}]}
+EOF
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/bad.json" --root "$TMP")
+echo "$OUT" | grep -q "found NOTHING in them" \
+  && ok "field test: a file that matched but yielded nothing errors, instead of reporting 'absent'" \
+  || bad "matched-but-empty guard" "a broken pattern was laundered into a confident false claim that the product has no such tokens:
+$OUT"
 rm -rf "$TMP"
 
 # Non-Flutter path. One CSS file holds every family at once, which is the norm

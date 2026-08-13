@@ -58,8 +58,10 @@ VERSION = "extract_tokens/1.0"
 
 PRESETS: dict[str, dict[str, str]] = {
     "dart-color": {
-        "pattern": r"(?P<name>\w+)\s*:\s*(?:const\s+)?Color\(\s*(?P<value>0x[0-9A-Fa-f]{8})\s*\)",
-        "about": "Dart: `textPrimary: Color(0xFF1A1A1A)` inside a ThemeExtension constructor call",
+        "pattern": r"(?P<name>\w+)\s*[:=]\s*(?:const\s+)?Color\(\s*(?P<value>0x[0-9A-Fa-f]{6,8})\s*\)",
+        "about": "Dart, both idioms: `textPrimary: Color(0xFF1A1A1A)` in a ThemeExtension "
+                 "constructor call, and `static const textPrimary = Color(0xff182230)` in a "
+                 "plain holder class",
     },
     "dart-double": {
         "pattern": r"(?P<name>\w+)\s*:\s*(?P<value>-?\d+(?:\.\d+)?)\s*[,)]",
@@ -225,6 +227,20 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
                       f"(dump the resolved theme to JSON and use format json-tree).", file=sys.stderr)
                 continue
             found[name] = {"value": value, "file": rel, "line": line}
+
+    if paths and not found:
+        raise SystemExit(
+            f"[{family}] {len(paths)} file(s) matched {src['glob']!r} and the pattern found "
+            f"NOTHING in them.\n"
+            f"  This is almost never a genuinely empty family — it is the wrong pattern for "
+            f"this project's idiom.\n"
+            f"  Reporting it as 'absent' would turn a broken config into a confident false "
+            f"statement about the product.\n"
+            f"  Open one of the files, check how a token is actually written, and fix the "
+            f"preset or pattern.\n"
+            f"  If the family really is empty here, drop the source and give the family an "
+            f"empty list instead."
+        )
 
     return found
 

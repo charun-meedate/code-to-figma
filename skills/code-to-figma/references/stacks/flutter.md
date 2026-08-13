@@ -114,8 +114,17 @@ gallery, not the web catalog.
 
 ## Flow tracing
 
-`go_router` route trees plus the redirect guard, plus the navigation calls in
-each screen's state layer. The guard is worth its own node in
+Check which router the project actually uses before assuming:
+
+| Router | Where the graph is |
+|---|---|
+| `go_router` | the route tree plus the redirect guard |
+| `auto_route` | the generated router file |
+| **GetX** (`package:get`) | a `app_pages.dart` / `getPages` list — a real route table; then `Get.to`/`Get.offNamed` call sites. GetX also supplies DI and state, so a GetX project needs none of the get_it or bloc harness advice above |
+| plain `Navigator` | `onGenerateRoute`, plus `Navigator.push` call sites — the most work to trace, since there is no table |
+
+For `go_router`, the route tree plus the redirect guard, plus the navigation
+calls in each screen's state layer. The guard is worth its own node in
 `flow-edges.json` with a `decisions` list — on the proven run guard edges and
 self-failure edges together outnumbered plain user actions, which is a useful
 thing for a design review to see.
