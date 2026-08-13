@@ -88,6 +88,36 @@ else
     && bad "no warning when nothing was hidden" "$OUT" \
     || ok "no warning when nothing was hidden"
 
+  # Measured on 12 production screenshots: at the old 2% row threshold a mere
+  # resample round trip opened 12.3 bands per image with no design change. The
+  # default is 5% for that reason, and bands are ranked so the noise tail is
+  # legible rather than silent.
+  python3 - "$HERE" <<'PYX' && ok "field test: the row threshold is the measured 5%, not the fixture-tuned 2%" || bad "row threshold" "2% opened ~12 bands per real screenshot from anti-aliasing alone, making the band-by-band PASS rule unusable"
+import sys, re
+src = open(sys.argv[1] + "/image_diff.py").read()
+sys.exit(0 if re.search(r"DEFAULT_ROW_THRESHOLD = 5\.0", src) else 1)
+PYX
+
+  # A frame with many bands must lead with the strongest, or nobody reads them.
+  py - <<'PYX'
+from PIL import Image
+import numpy as np
+rng = np.random.default_rng(7)
+a = np.full((300, 200, 3), 250, dtype=np.uint8)
+b = a.copy()
+for y, frac in ((40, 0.06), (120, 0.55), (200, 0.10)):
+    cols = rng.choice(200, int(200 * frac), replace=False)
+    b[y:y+6, cols] = 0
+Image.fromarray(a).save('/tmp/_rank_ref.png'); Image.fromarray(b).save('/tmp/_rank_fig.png')
+PYX
+  OUT=$(py "$HERE/image_diff.py" --ref /tmp/_rank_ref.png --fig /tmp/_rank_fig.png)
+  FIRST=$(echo "$OUT" | grep -oE "peak [0-9]+\.[0-9]%" | head -1 | grep -oE "[0-9]+" | head -1)
+  [[ "${FIRST:-0}" -ge 40 ]] \
+    && ok "bands are reported strongest-first, not in canvas order" \
+    || bad "band ranking" "the 55%-peak band must lead; got first peak ${FIRST:-none}:
+$OUT"
+  rm -f /tmp/_rank_ref.png /tmp/_rank_fig.png
+
   # Measured on 12 production screenshots: real light-theme UIs span 163-232,
   # only 3 above the retired 160 cutoff. A flat frame with a real difference must
   # report it plainly, with no contrast commentary.

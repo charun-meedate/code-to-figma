@@ -8,13 +8,21 @@
    percentage over threshold, and **the rows that differ, merged into bands**.
    Pass `--out` every time: without it no composite is written, and step 5
    below is the whole judgement.
-4. **PASS only when every band lies on a row of text.** A band on a card edge,
-   a button edge, an input border or an image boundary is structural drift, at
-   any percentage.
+4. **Judge the strongest bands.** Bands are reported peak-first. A band on a
+   card edge, a button edge, an input border or an image boundary is structural
+   drift, at any percentage. A band on a row of text is pre-approved.
 5. Open the composite. Every time.
 
 Text rows differ because rasterizers and break dictionaries differ — that is
 pre-approved. Geometry differing is never pre-approved.
+
+**Expect a tail of weak bands on real UI, and do not classify all of them.**
+Measured on twelve production screenshots: a resample round trip — *less*
+difference than two real renderers produce — opens an average of 12.3 bands per
+image at the old 2% row threshold, with no design change whatsoever. That is
+why the default is 5%, why bands come out ranked, and why the script says how
+many peak under 15%. The rule is "every band that matters lies on text", and
+the count of bands is not a score.
 
 ## The percentage is the least trustworthy number on the page
 

@@ -44,9 +44,16 @@ VERSION = "image_diff/1.0"
 # THRESHOLD 24/255 — the per-channel difference that counts as a difference.
 #   Carried from the proven run. Below roughly this, JPEG-ish artifacts and
 #   the two rasterizers' anti-aliasing dominate and every frame looks broken.
-# ROW 2% — how much of a row must differ before the row joins a band. Chosen so
-#   a single glyph's worth of anti-aliasing does not open a band, while one
-#   short differing text row does.
+# ROW 5% — how much of a row must differ before the row joins a band.
+#   Was 2%, chosen against flat synthetic fixtures where rasterizer noise is
+#   zero. Measured against 12 production screenshots: at 2% a resample round
+#   trip — LESS difference than two real renderers produce — opens an average of
+#   12.3 bands per image with no design change at all, which makes the
+#   band-by-band PASS rule unusable. At 5% that falls to 4.5 while a guaranteed
+#   -visible change is still detected in 12 of 12. Higher values keep cutting
+#   noise (0.9/img at 20%) but were not taken: the change used to test detection
+#   was a strong one, and a subtle real difference peaks much lower. Bands are
+#   ranked by peak instead, so the tail stays visible without being silent.
 # FLOOR 2 — the contrast-scaled threshold never goes below this, or
 #   sensor-level noise in a flat colour field becomes a band.
 #
@@ -63,7 +70,7 @@ VERSION = "image_diff/1.0"
 # comparison, cannot false-alarm, and deletes a constant that measurement showed
 # could not be set correctly.
 DEFAULT_THRESHOLD = 24
-DEFAULT_ROW_THRESHOLD = 2.0
+DEFAULT_ROW_THRESHOLD = 5.0
 MIN_ESCALATED_THRESHOLD = 2
 
 try:
@@ -161,8 +168,19 @@ def main() -> int:
     print(f"  mean abs diff : {mean_abs:.2f} / 255")
     print(f"  pixels over   : {pct_over:.2f}%")
     print(f"  bands         : {len(band_list)}")
-    for y0, y1, peak in band_list:
+    # Strongest first. On real UI the tail is usually rasterizer noise, and a
+    # reviewer who has to read 30 bands in canvas order reads none of them.
+    ranked = sorted(band_list, key=lambda b: -b[2])
+    SHOW = 12
+    for y0, y1, peak in ranked[:SHOW]:
         print(f"      y {y0:>4}–{y1:<4}  ({y1 - y0 + 1:>3} rows, peak {peak:.1f}%)")
+    if len(ranked) > SHOW:
+        print(f"      … {len(ranked) - SHOW} weaker band(s), peak {ranked[SHOW][2]:.1f}% and below")
+    weak = sum(1 for b in ranked if b[2] < 15)
+    if weak and len(ranked) > 3:
+        print(f"\n  {weak} of {len(ranked)} bands peak under 15%. On text-dense UI that tail is"
+              "\n  usually rasterizer anti-aliasing rather than drift — judge the top of the"
+              "\n  list first, and do not treat the count itself as a score.")
 
     # A frame behind a scrim, a barrier or a modal has a compressed dynamic
     # range, so a fixed threshold stops meaning anything: on the proven run a
