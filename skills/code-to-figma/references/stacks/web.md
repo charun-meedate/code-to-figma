@@ -8,6 +8,17 @@ stack; the mechanics below are the standard tooling for these frameworks and
 have not been through a full programme here. Where something is a
 recommendation rather than a measured result, it says so.
 
+## Contents
+
+- Token sources, most to least authoritative
+- Naming
+- Catalog
+- Images
+- Flow tracing
+- Two web-specific realities
+
+---
+
 ## Token sources, most to least authoritative
 
 | Shape | Where | Preset |

@@ -1,6 +1,6 @@
 ---
 name: code-to-figma
-description: Rebuild a codebase's design system inside Figma so it matches the running code — tokens value-exact, structure within a measured tolerance, names identical, flows traced from the router — optionally via a component catalog that supplies the rendered evidence. Use when asked to create a Figma design system, component library, screens or user flows from an existing codebase, to mirror an app in Figma, or to sync code tokens into a Figma file.
+description: Builds a Figma design system from an existing codebase so it matches the running code — tokens value-exact, structure within a measured tolerance, names identical, flows traced from the router — optionally through a component catalog that supplies the rendered evidence. Use when the user wants a design system, components, screens or user flows created in Figma from code, or code tokens synced into a Figma file.
 ---
 
 # Mirroring a codebase into Figma
@@ -96,7 +96,7 @@ control files in `docs/design-mirror/`, one flow at a time, light theme first.
 |---|---|---|---|
 | **T1 tokens** | P0 (font gate), P1, P7 | source files only — no screenshots at all | "Variables are value-exact against code. Nothing is claimed about how components consume them." |
 | **T2 components** | + P2, P3, P4, P5 | catalog renders, or one-off component renders | "Masters verified against renders; screen composition unverified." |
-| **T3 screens** | full P0–P5.5, P7 | catalog gallery — or a degraded base, declared | catalog: structure to ±2px, text rows pre-approved. Otherwise see `evidence-without-storybook.md` |
+| **T3 screens** | full P0–P5.5, P7 | catalog renders — or a degraded base, declared | catalog: structure to ±2px, text rows pre-approved. Otherwise see `evidence-without-storybook.md` |
 | **T4 flows** | + P6 | the router trace | "Arrows are only as good as the trace — every edge cites its source line." |
 | **flows-map** | P0 (minimal), P6, P7 | router files only | "A navigation map, not screen art. No visual claims." |
 
@@ -176,23 +176,28 @@ Scores from different versions of a diff script are not comparable.
 
 ## Rules that exist because they were broken
 
-- **Never fix the product's bugs in Figma.** Reproduce them, annotate them, and
-  record them in the findings document. Never touch the source.
-- **Never normalize what is random.** Clock-seeded dates and shuffled options
-  change on every regeneration. Copy what the reference shows.
-- **Divide by the reference scale, every time.** Forget once and you get a
-  component at exactly double size — smooth enough to pass review.
-- **Values come from source; images only confirm.** If you have not read the
-  source, you may not write that you know it.
-- **Write `‹MEASURING›`, never a plausible number.** A guessed figure is the
-  same defect as a wrong one and much harder to catch.
-- **Never hardcode a hex or a font size.** Everything binds to a variable or a
-  style, or the relink later becomes a manual sweep of the whole file.
-- **Never build a convincing fake.** What cannot be drawn gets a notice saying
-  what is blocking it — never a plausible-looking stand-in.
-- **Never draw or hand-edit a flow line.** Change the JSON, regenerate.
-- **A missing registry ID means stop and ask.**
-- **An absent token family is a finding, not a gap to fill.**
+Each says what to do. The thing to avoid is named second, because it is the
+thing an agent reaches for by default.
+
+- **Reproduce the product's bugs and annotate them**, then record them in the
+  findings document — rather than fixing them in Figma or in the source.
+- **Copy what the reference image shows**, exactly, for anything seeded by a
+  clock or a shuffle — rather than recomputing or tidying it.
+- **Divide every measurement by the reference scale.** Forget once and you get
+  a component at exactly double size, smooth enough to pass review.
+- **Read values from source and use images to confirm with the eye.** If you
+  have not read the source, you may not write that you know it.
+- **Write `‹MEASURING›` for a number you have not taken yet.** A plausible
+  figure is the same defect as a wrong one and much harder to catch.
+- **Bind every fill and stroke to a variable, and every text to a style** —
+  a hand-typed hex turns the eventual relink into a manual sweep of the file.
+- **Say what is blocking a thing you cannot draw**, on the canvas, with a
+  notice naming it — rather than drawing a plausible-looking stand-in.
+- **Generate every flow line from the JSON.** To change one, change the JSON
+  and regenerate.
+- **Stop and ask when a registry ID has vanished.** A human may have moved it.
+- **Record an absent token family as a finding**, with the evidence for its
+  absence.
 
 ## Scripts
 

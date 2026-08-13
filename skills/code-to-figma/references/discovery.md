@@ -19,6 +19,20 @@ organisation's existing design-system library may be used.
 Write a citation into `evidence` for every detected field. A field with no
 citation and no human answer must stay `null`.
 
+## Contents
+
+- D1 · Framework
+- D2 · Runner, variants, environment
+- D3 · Token sources, per family
+- D4 · Catalog
+- D5 · What a harness would have to stand in for
+- D6 · How images will be produced
+- D7 · Design side
+- D8 · Text script
+- Reporting back
+
+---
+
 ## D1 · Framework
 
 **Test in this order and stop at the first match.** The order is the whole

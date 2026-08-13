@@ -307,6 +307,39 @@ done
 grep -q "Session-start ritual" "$SKILL/templates/GROUND-TRUTH-RULES.template.md" \
   && ok "ground-truth template keeps the session ritual" || bad "session ritual" ""
 
+# --------------------------------------------------------- skill-writing rules
+# From the make-skill-great release checklist. A convention nobody checks is a
+# convention that lasts one refactor.
+head_ "skill-writing conventions"
+
+python3 - "$SKILL" <<'PY' && ok "every phase ends with a checkable exit condition" || bad "phase exit conditions" "a step with no 'Done when' lets the agent declare victory early"
+import sys, re
+from pathlib import Path
+text = Path(sys.argv[1] + "/references/phases.md").read_text()
+# split on phase headings, ignore the preamble and the Contents block
+chunks = re.split(r"\n##+ (?=P-?\d)", text)[1:]
+missing = [c.split("\n")[0] for c in chunks if "Done when:" not in c]
+if missing:
+    print("  no exit condition: " + ", ".join(missing), file=sys.stderr)
+sys.exit(1 if missing else 0)
+PY
+
+FAILED_TOC=""
+for f in "$SKILL"/references/*.md "$SKILL"/references/stacks/*.md; do
+  n=$(wc -l < "$f")
+  if [[ $n -gt 100 ]] && ! grep -q "^## Contents" "$f"; then
+    FAILED_TOC="$FAILED_TOC $(basename "$f")($n)"
+  fi
+done
+[[ -z "$FAILED_TOC" ]] \
+  && ok "every reference over 100 lines opens with a Contents block" \
+  || bad "reference contents blocks" "missing in:$FAILED_TOC"
+
+grep -q "SKILL.md" /dev/null; LINES=$(wc -l < "$SKILL/SKILL.md")
+[[ $LINES -lt 500 ]] \
+  && ok "SKILL.md is $LINES lines (under the 500 ceiling)" \
+  || bad "SKILL.md length" "$LINES lines — push path-specific detail into references/"
+
 # ------------------------------------------------------------------ frontmatter
 head_ "skill frontmatter"
 

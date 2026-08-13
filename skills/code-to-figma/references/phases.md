@@ -10,6 +10,20 @@ nothing else. Flows-map runs P0, P6 and P7.
 
 ---
 
+## Contents
+
+- P-1 · Build the catalog
+- P0 · Gates
+- P1 · Foundations
+- P2 · Assets
+- P3 · Component kit
+- P4 · Pilot — the approval gate
+- P5 · Scale
+- P6 · Flow lines
+- P7 · Verify and hand off
+
+---
+
 ## P-1 · Build the catalog
 
 Only when the intake said to build one. **This is a separate project, not a
@@ -23,6 +37,8 @@ two-way name-based drift check, an image of every story, and gates that
 actually run.
 
 Do not start P0 until an image of every story in scope exists.
+
+**Done when:** an image exists for every story in scope, and the drift check names zero uncatalogued components.
 
 ## P0 · Gates
 
@@ -69,6 +85,8 @@ redo; the scale phase is not.
 
 Record each gate in the table at the bottom of GROUND-TRUTH-RULES.
 
+**Done when:** every gate this tier requires is ticked in that table with a date, and the ones that do not apply are struck through rather than left blank.
+
 ## P1 · Foundations
 
 1. **Variables first**, in collections that mirror the token families —
@@ -93,6 +111,8 @@ Record each gate in the table at the bottom of GROUND-TRUTH-RULES.
 Variables are the highest-value part of the whole programme and the only part
 a machine can do end-to-end. Components always need a human decision.
 
+**Done when:** `token_diff.py` exits 0, its report is attached rather than summarized, and every collection in the registry cites the code file its values came from.
+
 ## P2 · Assets
 
 Upload only what the pilot needs. Real asset files — never a redraw. Vector
@@ -105,6 +125,8 @@ converting silently is not — it goes in `deviation-log.md` as **pre-approved
 row A/P6** (that is a row label, not phase 6; keep that row in the template
 whenever any asset was converted).
 
+**Done when:** every asset the pilot needs is uploaded with its hash in the registry, and every format conversion has its deviation row.
+
 ## P3 · Component kit
 
 Still only what the pilot needs. Building the whole kit before one screen has
@@ -114,6 +136,8 @@ For each component: master with auto-layout mirroring the real structure,
 every fill and stroke bound to a variable, every text on a style, named after
 the class. Anything that must genuinely change size becomes a **variant** —
 size cannot be overridden inside an instance (see `figma-traps.md`).
+
+**Done when:** each component the pilot needs has a master named after its class, with no unbound fill or stroke and no unstyled text anywhere in it.
 
 ## P4 · Pilot — the approval gate
 
@@ -130,14 +154,18 @@ on one screen instead of sixteen is the whole return on this phase.
 
 Do not start P5 while the answer is outstanding.
 
+**Done when:** a human has approved it in writing and that answer is recorded in the checklist. Your own judgement that it looks right is not this condition.
+
 ## P5 · Scale
 
 Batch by **evidence-base section**, not by route order — it keeps the reference
 images you need in one place and stops you paging back and forth.
 
-Per screen, the eight-condition DONE from the checklist. Update the registry
+Per screen, the seven-condition DONE from the checklist. Update the registry
 as you go, not at the end: your context will be compacted and the registry is
 what survives.
+
+**Done when:** every screen in the batch meets all seven DONE conditions in the checklist — not six of seven on most of them.
 
 ### P5.5 · Cross-cutting fixes
 
@@ -147,6 +175,8 @@ consequences: an already-approved screen can be silently changed by a
 component fix, so **tell the human when that happens**, even when the change is
 an improvement; and a fix that touches every frame invalidates every diff
 number taken before it.
+
+**Done when:** every frame drawn before the fix has been re-compared, and the human has been told which approved screens changed.
 
 ## P6 · Flow lines
 
@@ -177,6 +207,8 @@ and draws one vector per edge. Two conventions make step 4 possible at all:
 Use `createVector()` with per-vertex stroke caps — a line's `strokeCap` puts an
 arrowhead on both ends.
 
+**Done when:** the number of lines on the canvas equals the number of edges in `flow-edges.json`, every one carries its label, and the legend is placed.
+
 ## P7 · Verify and hand off
 
 - Every checklist row closed, or listed as not done with a reason.
@@ -188,3 +220,5 @@ arrowhead on both ends.
   why, what the next session should read first, and **which decisions you took
   on the human's behalf.** That last list is the one people forget and the one
   that matters most.
+
+**Done when:** every checklist row is either closed or listed as not-done with a reason, the deviation log has no unapproved row, and the handoff note names the decisions you took on the human's behalf.

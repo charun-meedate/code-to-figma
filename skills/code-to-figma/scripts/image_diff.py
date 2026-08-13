@@ -38,6 +38,25 @@ import sys
 
 VERSION = "image_diff/1.0"
 
+# Where these numbers come from. Change one and every past score becomes
+# incomparable, which is why the version string above is printed with them.
+#
+# THRESHOLD 24/255 — the per-channel difference that counts as a difference.
+#   Carried from the proven run. Below roughly this, JPEG-ish artifacts and
+#   the two rasterizers' anti-aliasing dominate and every frame looks broken.
+# ROW 2% — how much of a row must differ before the row joins a band. Chosen so
+#   a single glyph's worth of anti-aliasing does not open a band, while one
+#   short differing text row does.
+# CONTRAST 160/255 — below this spread, the reference is behind something
+#   translucent and the fixed threshold stops meaning anything. A normal UI
+#   frame spans far more; the scrim fixture spans 18.
+# FLOOR 2 — the escalated threshold never goes below this, or sensor-level
+#   noise in a flat colour field becomes a band.
+DEFAULT_THRESHOLD = 24
+DEFAULT_ROW_THRESHOLD = 2.0
+LOW_CONTRAST_SPREAD = 160
+MIN_ESCALATED_THRESHOLD = 2
+
 try:
     import numpy as np
     from PIL import Image
@@ -97,8 +116,8 @@ def main() -> int:
     p.add_argument("--ref", required=True, help="reference render (the evidence base image)")
     p.add_argument("--fig", required=True, help="Figma frame export")
     p.add_argument("--scale", default="auto", help="reference scale factor; 'auto' infers it")
-    p.add_argument("--threshold", type=int, default=24, help="per-channel difference that counts (0-255)")
-    p.add_argument("--row-threshold", type=float, default=2.0, help="%% of a row differing before it is a band")
+    p.add_argument("--threshold", type=int, default=DEFAULT_THRESHOLD, help="per-channel difference that counts (0-255)")
+    p.add_argument("--row-threshold", type=float, default=DEFAULT_ROW_THRESHOLD, help="%% of a row differing before it is a band")
     p.add_argument("--out", default=None, help="write a composite diff PNG here")
     args = p.parse_args()
 
@@ -144,10 +163,10 @@ def main() -> int:
     # "the tool says so".
     lum = np.asarray(ref.convert("L"), dtype=np.int16)
     contrast = int(np.percentile(lum, 99) - np.percentile(lum, 1))
-    low_contrast = contrast < 160
+    low_contrast = contrast < LOW_CONTRAST_SPREAD
     escalated = None
     if low_contrast:
-        scaled = max(2, round(args.threshold * contrast / 255))
+        scaled = max(MIN_ESCALATED_THRESHOLD, round(args.threshold * contrast / 255))
         if scaled < args.threshold:
             escalated = (scaled,) + analyse(scaled)
 

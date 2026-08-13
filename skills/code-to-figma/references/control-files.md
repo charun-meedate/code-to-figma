@@ -21,6 +21,15 @@ Four exist at the end of intake. The other three appear when there is
 something true to put in them — a checklist with estimated counts is worse
 than no checklist.
 
+## Contents
+
+- The session ritual
+- Why the registry is the truth
+- The deviation log carries the honesty
+- What survives
+
+---
+
 ## The session ritual
 
 Written as §0 of the rules file because it must be read before anything else:

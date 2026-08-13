@@ -13,6 +13,17 @@ to compare a screen against. That trade is spelled out in
 
 Whatever tool you use, it has to satisfy four things.
 
+## Contents
+
+- 1 · Every story carries documentation, enforced
+- 2 · A two-way drift check, by name
+- 3 · An image of every story
+- 4 · Gates that actually run
+- Fakes, in order of preference
+- What the catalog gives back
+
+---
+
 ## 1 · Every story carries documentation, enforced
 
 Name, when-to-use, props, and a static overview of the variants that genuinely

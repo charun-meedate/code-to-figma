@@ -3,6 +3,18 @@
 This is the stack the whole method was built on, so the guidance here is
 evidence rather than extrapolation.
 
+## Contents
+
+- Catalog: load the bundled skills
+- Token sources
+- Icons
+- Flutter-to-Figma semantics that do not map
+- Reference images and the app
+- Web builds compile but do not always run
+- Flow tracing
+
+---
+
 ## Catalog: load the bundled skills
 
 Do not improvise. Two skills ship in this repo and cover it:

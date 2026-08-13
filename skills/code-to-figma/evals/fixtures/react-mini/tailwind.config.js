@@ -1,12 +1,6 @@
-/** The decoy.
+/** Tailwind theme.
  *
- * Everything here re-exports the CSS custom properties in
- * src/styles/tokens.css. Nothing is defined here. Extracting from this file
- * produces a set of var() references instead of values, and misses the
- * primitives entirely.
- *
- * The question to ask is "which file does a developer edit when a colour
- * changes?" — the answer is tokens.css, and this is a view of it.
+ * Exposes the design tokens to utility classes.
  */
 export default {
   content: ["./src/**/*.{ts,tsx}"],

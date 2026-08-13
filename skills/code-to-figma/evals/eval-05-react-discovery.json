@@ -7,7 +7,7 @@
     "evals/fixtures/react-mini/ — a Vite + React project, no node_modules, nothing installed",
     "package.json: react, react-router-dom, @storybook/react-vite, @storybook/test-runner, playwright, tailwindcss; packageManager is pnpm",
     "src/styles/tokens.css — CSS custom properties: 5 primitives, 6 semantic aliases OF those primitives, 1 rgba() overlay with alpha, 5 spacing, 2 radius, 4 type",
-    "tailwind.config.js — every entry is a var() reference back to tokens.css, nothing is defined there, AND it is deliberately incomplete: 3 of 12 colours, 3 of 5 spacings",
+    "tailwind.config.js — every entry is a var() reference back to tokens.css, nothing is defined there, AND it is deliberately incomplete: 3 of 12 colours, 3 of 5 spacings. Its comment says only 'Tailwind theme' — the agent has to work out which file is authoritative from the var() indirection, not read the answer off a label. An earlier version of this fixture labelled itself 'The decoy' and the cross-model run showed the agent quoting that label instead of reasoning.",
     "No shadow custom property anywhere; two different boxShadow values written inline, in Button.tsx and Card.tsx",
     "No opacity scale; the only alpha is baked into the overlay token",
     ".storybook/main.ts with framework @storybook/react-vite, and 6 stories across Button and Card",

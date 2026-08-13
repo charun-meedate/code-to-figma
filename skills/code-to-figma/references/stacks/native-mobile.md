@@ -7,6 +7,17 @@ against the project, and say so to whoever is relying on the result. The
 invariants — criteria first, one approved pilot, registry as truth, values
 from source — hold regardless.
 
+## Contents
+
+- The hard part is the catalog, and it is mostly missing
+- Token sources
+- Capture
+- Flow tracing
+- Icons
+- What to tell the team
+
+---
+
 ## The hard part is the catalog, and it is mostly missing
 
 **SwiftUI previews cannot be exported in bulk.** `#Preview` renders in Xcode's
