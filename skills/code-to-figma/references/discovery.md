@@ -67,7 +67,7 @@ in scope before anything else, and record it as `stack.monorepoPackage`.
   schemes, and as `main_*.dart` entry points. Grep `.vscode/launch.json`,
   `Makefile`, CI config and `scripts/` for `--dart-define`.
 - JS: the `packageManager` field wins; otherwise the lockfile
-  (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lockb` → bun, else npm).
+  (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock` **or** `bun.lockb` → bun — bun moved from the binary `.lockb` to a text `bun.lock`, so checking only the old name reads a current bun project as npm; else npm).
   Record `scripts.dev`, `scripts.build`, `scripts.storybook`, `scripts.test`.
 - Note which environment variables the app refuses to start without, and what
   a safe placeholder is. A catalog build that cannot boot is not a catalog.

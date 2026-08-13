@@ -216,6 +216,22 @@ echo "$OUT" | grep -q "still unresolved" \
   || ok "field test: a path-named entry does not claim its own alias key"
 rm -rf "$TMP"
 
+# The shadcn radius convention, in two of three field-tested codebases. The
+# reference is INSIDE the expression, so whole-value resolution alone leaves it
+# a string and Figma cannot store a string as a corner radius.
+TMP=$(mktemp -d)
+cat > "$TMP/v.css" <<'EOF'
+:root { --radius: 0.625rem; --radius-sm: calc(var(--radius) - 4px); }
+EOF
+echo '{"radius":[{"glob":"v.css","preset":"css-custom-property"}]}' > "$TMP/cfg.json"
+py "$HERE/extract_tokens.py" --config "$TMP/cfg.json" --root "$TMP" --resolve-aliases --out "$TMP/o.json" >/dev/null
+python3 - "$TMP/o.json" <<'PY' && ok "field test: calc() with an embedded var() evaluates (0.625rem - 4px = 6px)" || bad "calc evaluation" "an unevaluated calc is a token that cannot be pushed to Figma"
+import json, sys
+v = json.load(open(sys.argv[1]))["radius"]["radius-sm"]
+sys.exit(0 if v["value"] == "6px" and v.get("calcFrom") else 1)
+PY
+rm -rf "$TMP"
+
 TMP=$(mktemp -d)
 printf 'static let legacy = Color(UIColor(red: 0.1, green: 0.2, alpha: 1.0))\n' > "$TMP/C.swift"
 echo '{"color":[{"glob":"*.swift","preset":"swift-color"}]}' > "$TMP/cfg.json"

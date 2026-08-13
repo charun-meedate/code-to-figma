@@ -61,8 +61,11 @@ v4 project finds nothing and the obvious conclusion — "no Tailwind theme here"
 — is wrong. Check the CSS for `@theme` and `@theme inline`. Measured on a real
 shadcn + Tailwind v4 project: **531 custom properties across two files, of
 which only 43% were directly usable values** — the rest were `var()` aliases
-(260), `oklch()` (31) and `calc()` (6). With `--resolve-aliases` and oklch
-support that same project reads **100%**. Run the extraction both ways once:
+(260), `oklch()` (31) and `calc()` (6). With `--resolve-aliases` (which substitutes
+references inside expressions too), `calc()` evaluation and oklch support, that
+same project reads **100%**. Across three real web codebases the tier now
+lands at 100% / 96% / 97% comparable; what is left over is font stacks and
+animation shorthands, which are not scalars and are reported as such. Run the extraction both ways once:
 the gap between the two numbers is the size of the semantic layer, which is
 worth knowing before you model it in Figma.
 
@@ -166,6 +169,7 @@ before trusting a single diff:
 | Next pages router | `pages/`; same call sites |
 | vue-router | the routes array; `router.push`, `<router-link>` |
 | Angular | `RouterModule.forRoot` route config; `router.navigate` |
+| TanStack Router | **`routeTree.gen.ts`** — a generated, complete route tree, the easiest graph to trace of any router here. Read it rather than the `src/routes/` files; guards are `beforeLoad` on a route |
 
 Guards map cleanly onto the `guard` edge kind: route loaders, middleware,
 `beforeEnter` hooks, auth wrappers. Next middleware is a single file that

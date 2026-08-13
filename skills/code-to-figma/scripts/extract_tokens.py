@@ -258,6 +258,9 @@ def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
                 for key in {name, name.split("/")[-1], name.replace("/", "-"), name.replace("/", ".")}:
                     index.setdefault(key.lower(), (family, name))
 
+    def lookup(ref: str):
+        return index.get(ref) or index.get(ref.replace(".", "-")) or index.get(ref.split(".")[-1])
+
     unresolved: list[str] = []
     resolved = 0
     for _ in range(rounds):
@@ -267,19 +270,36 @@ def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
                 v = entry["value"]
                 if not isinstance(v, str):
                     continue
+
                 m = _REF.match(v)
-                if not m:
+                if m:
+                    ref = (m.group(1) or m.group(2) or "").lower()
+                    hit = lookup(ref)
+                    if not hit or hit == (family, name):
+                        continue
+                    target = result[hit[0]][hit[1]]["value"]
+                    if isinstance(target, str) and _REF.match(target):
+                        continue  # still a reference; another round will get it
+                    entry["value"] = target
+                    entry["aliasOf"] = ref
+                    changed += 1
                     continue
-                ref = (m.group(1) or m.group(2) or "").lower()
-                hit = index.get(ref) or index.get(ref.replace(".", "-")) or index.get(ref.split(".")[-1])
-                if not hit or hit == (family, name):
-                    continue
-                target = result[hit[0]][hit[1]]["value"]
-                if isinstance(target, str) and _REF.match(target):
-                    continue  # still a reference; another round will get it
-                entry["value"] = target
-                entry["aliasOf"] = ref
-                changed += 1
+
+                # A reference EMBEDDED in a larger expression — `calc(var(--radius) - 4px)`,
+                # `1px solid var(--border)`. Substituting in place is what makes the
+                # expression evaluable afterwards; resolving only whole-value references
+                # leaves every shadcn radius token stuck as a string.
+                def sub(mm):
+                    hit = lookup(mm.group(1).lower())
+                    if not hit or hit == (family, name):
+                        return mm.group(0)
+                    tv = result[hit[0]][hit[1]]["value"]
+                    return str(tv) if not (isinstance(tv, str) and "var(" in tv) else mm.group(0)
+
+                new_v = re.sub(r"var\(\s*--([\w-]+)\s*\)", sub, v)
+                if new_v != v:
+                    entry["value"] = new_v
+                    changed += 1
         resolved += changed
         if not changed:
             break
@@ -289,6 +309,37 @@ def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
             if isinstance(entry["value"], str) and _REF.match(entry["value"]):
                 unresolved.append(f"{family}/{name} -> {entry['value']}")
     return resolved, unresolved
+
+
+_LEN = r"(-?\d*\.?\d+)(px|rem|em|%)?"
+_CALC = re.compile(rf"^\s*calc\(\s*{_LEN}\s*([-+*/])\s*{_LEN}\s*\)\s*$")
+REM_PX = 16  # CSS default root font size; only valid if the project has not changed it
+
+
+def eval_calc(value: str) -> str | None:
+    """Evaluate the one calc() shape design systems actually use.
+
+    `calc(var(--radius) - 4px)` is the shadcn radius convention and appeared in
+    two of the three codebases this was field-tested on. Figma stores a number,
+    not an expression, so an unevaluated calc is a token that cannot be pushed.
+
+    Deliberately narrow: two operands, after aliases have been resolved.
+    Anything more complex returns None and stays a reported string rather than
+    being guessed at.
+    """
+    m = _CALC.match(value)
+    if not m:
+        return None
+    a, ua, op, b, ub = m.groups()
+    to_px = lambda n, u: float(n) * (REM_PX if u in ("rem", "em") else 1)
+    if "%" in (ua, ub):
+        return None
+    x, y = to_px(a, ua), to_px(b, ub)
+    try:
+        r = {"+": x + y, "-": x - y, "*": x * y, "/": x / y}[op]
+    except ZeroDivisionError:
+        return None
+    return f"{r:g}px"
 
 
 def main() -> int:
@@ -338,6 +389,18 @@ def main() -> int:
         alias_note = f"  resolved {n} alias reference(s)"
         if unresolved:
             alias_note += f"; {len(unresolved)} still unresolved"
+        # calc() usually wraps a var(), so this only works after resolution.
+        calcs = 0
+        for tokens in result.values():
+            for entry in tokens.values():
+                if isinstance(entry["value"], str):
+                    got = eval_calc(entry["value"])
+                    if got is not None:
+                        entry["calcFrom"] = entry["value"]
+                        entry["value"] = got
+                        calcs += 1
+        if calcs:
+            alias_note += f"; evaluated {calcs} calc() expression(s)"
 
     total = sum(len(v) for v in result.values())
     print(f"{VERSION}  root={args.root}")
