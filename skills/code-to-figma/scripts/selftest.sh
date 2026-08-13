@@ -144,6 +144,18 @@ ok = (td.normalize("rgb(59,110,245)") == td.normalize("#3b6ef5")
 sys.exit(0 if ok else 1)
 PY
 
+# Real values read back out of Figma, not synthetic ones. Figma stores a colour
+# channel as a float and hands it back with drift — 0.956863 comes back as
+# 0.9568629860877991 — so the round trip only survives because normalization
+# rounds. Verified against an actual push/dump on 2026-08-13.
+python3 - "$HERE" <<'PYEOF' && ok "field test: Figma's float drift still normalizes to the same value" || bad "figma float precision" "a real round trip returns 0.9568629860877991 for 0.956863; if these stop matching, every pushed colour reads as a mismatch"
+import sys, importlib.util
+spec = importlib.util.spec_from_file_location("td", sys.argv[1] + "/token_diff.py")
+td = importlib.util.module_from_spec(spec); spec.loader.exec_module(td)
+from_figma = {"r": 0.9568629860877991, "g": 0.9568629860877991, "b": 0.9607840180397034, "a": 1}
+sys.exit(0 if td.normalize(from_figma) == td.normalize("#f4f4f5") else 1)
+PYEOF
+
 # oklch is what Tailwind v4 and shadcn emit, so a current web project is mostly
 # this and nothing else. Reference values checked against the CSS Color 4 spec.
 python3 - "$HERE" <<'PY' && ok "field test: oklch() converts to sRGB correctly (Tailwind v4 / shadcn)" || bad "oklch conversion" "a modern web project is mostly oklch; getting this wrong silently shifts every colour"

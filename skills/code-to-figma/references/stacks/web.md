@@ -77,6 +77,14 @@ var(--primary)`. The real values sit in a `:root` block, often in a different
 file. Extract the `:root` layer for values, and model the `@theme` layer as
 Figma variables that reference them.
 
+**Do not point one family at both layers.** A config with a `:root` source and
+a `@theme` source under the same family extracts every token twice — once as
+`accent` and once as `color-accent` — and pushing that produces two Figma
+variables per token, the second named `color/color/accent`. Caught on a real
+push by reading the payload before writing it: 34 duplicates in 68 entries.
+Extract the definitions; add the bridge as aliases afterwards, or leave it out
+and say so.
+
 Three more things that catch people out:
 
 **A project can have two of these and mean one.** A Tailwind config that only
