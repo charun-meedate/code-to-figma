@@ -511,6 +511,11 @@ for section in "## A." "## B." "## C." "## D."; do
     && ok "acceptance criteria has $section" || bad "acceptance criteria has $section" ""
 done
 
+{ grep -q "Probe status" "$SKILL/references/figma-traps.md" \
+  && grep -q "Last probed" "$SKILL/references/figma-traps.md"; } \
+  && ok "the plugin-API traps table carries probe dates per row" \
+  || bad "traps table dating" "re-probing found 4 of 7 rows drifted — 2 retired outright. An undated trap table is folklore, and acting on a retired trap costs a workaround nobody needed"
+
 grep -q "Session-start ritual" "$SKILL/templates/GROUND-TRUTH-RULES.template.md" \
   && ok "ground-truth template keeps the session ritual" || bad "session ritual" ""
 

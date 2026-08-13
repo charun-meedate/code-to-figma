@@ -226,6 +226,35 @@ config ของรอบที่ 3 มี 2 source อยู่ใน family �
 เขียนลง `verification.md` เป็นหัวข้อ "What this cannot see" และโยงไปที่ acceptance criteria §C
 (สุ่มวัด 3 จุด / สุ่มดูดสี 5 จุด) ซึ่ง**มีอยู่แล้วเพราะเหตุผลนี้พอดี** แค่ไม่เคยเขียนโยงกันไว้
 
+**5 · ตาราง "กับดัก Figma API" ล้าไปแล้ว 4 ใน 7 แถว**
+
+`figma-traps.md` ลอกมาจากรอบ Poppa ทั้งตาราง แล้วส่งต่อในฐานะ**ข้อเท็จจริงปัจจุบัน**
+โดยไม่เคยทดสอบซ้ำ · รอบนี้เขียนสคริปต์ probe ยิงจริงทีละข้อในไฟล์ scratch
+
+| กับดัก | ผลจริง 2026-08-13 |
+|---|---|
+| scope `"STROKE"` ไม่ถูกต้อง | ✅ ยังจริง |
+| `FILL` บนลูกของ frame ธรรมดา throw | ✅ ยังจริง |
+| `visible=false` ใน instance เอากลับไม่ได้ | ✅ ยังจริง (children เหลือ 0) |
+| `resize()` รีเซ็ต sizing **ทั้งสองแกน** | ⚠️ **เกินจริง** — รีเซ็ตแค่แกนเดียว (HUG,HUG → FIXED,HUG) |
+| `x`/`name` ใน instance override ไม่ได้ | ⚠️ **ผิดครึ่ง** — `x` throw จริง แต่ **`name` override ได้** |
+| bound paint ที่ `color:{0,0,0}` + opacity<1 → ดำ | ❌ **เลิกใช้ได้แล้ว** — API resolve ค่าลง paint ให้เอง |
+| spread `opacity` ใส่ bound paint → binding หาย | ❌ **เลิกใช้ได้แล้ว** — เก็บทั้ง opacity และ binding |
+
+**การ act ตามกับดักที่เลิกเป็นกับดักแล้ว = เสีย workaround ที่ไม่ต้องเสีย** · แก้ตารางแล้ว
+พร้อมหัวข้อ "Probe status" ที่ลงวันที่รายแถว และบอกตรง ๆ ว่า 3 แถวยังไม่ได้ยิงซ้ำ
+ให้ถือเป็น "เบาะแส ไม่ใช่ข้อเท็จจริง"
+
+**และมันจับตัวเองได้** — 2 แถวที่เลิกใช้แล้ว เจอเพราะ**อ่านค่ากลับมาดูว่า API เก็บอะไรจริง**
+แทนที่จะเชื่อโน้ตที่บอกว่ามันจะเก็บอะไร ซึ่งเป็นกฎที่เขียนอยู่ท้ายหน้านั้นเองพอดี
+
+**6 · P3 (สร้าง component master) รันจริงได้แล้ว**
+
+สร้าง `PrimaryButton` ในไฟล์ scratch: auto-layout · fill/stroke bind variable ทุกจุด ·
+radius bind ทั้ง 4 มุม · text ใช้ variable · ตั้งชื่อตาม class
+**audit ของ skill เองผ่าน: unbound paint 0, unbound radius 0** — เป็นครั้งแรกที่ P3
+ถูกรันกับ Figma จริง
+
 ### ที่ยังไม่ได้ทดสอบในรอบนี้
 
 text style · effect style · component · การ bind variable เข้ากับ node ·
