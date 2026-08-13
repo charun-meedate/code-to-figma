@@ -4,6 +4,7 @@
 
 - The recipe
 - The percentage is the least trustworthy number on the page
+- What this cannot see
 - Scores are not comparable across runs
 - Before every verification session
 - Things that look like errors and are not
@@ -54,6 +55,36 @@ production screenshots retired that: real light-theme UIs span 163–232 levels,
 the lowest only three above the cutoff, so a slightly flatter product would have
 warned on every frame it ever compared. The second pass is cheap; guessing when
 to run it was not worth the false alarms.
+
+## What this cannot see
+
+The band method aggregates differences **per row**. That makes it strong on
+anything wide — a card edge, a button, a divider, a whole-frame shift — and
+structurally blind to anything narrow, because a small element cannot move
+enough of any single row to open a band.
+
+Measured on twelve production screenshots at 390px wide:
+
+| Structural error | Peak row % | Seen? |
+|---|---|---|
+| Card edge 8px wider | 36% | yes |
+| Button 200px wide shifted 2px | 26% | yes |
+| Whole frame shifted 1px | opens a band on every image | yes |
+| **Icon 24px shifted 4px** | **0.5%** | **no** |
+
+The icon is missed at every pixel threshold, including the old one — this is
+not a tuning problem. Only the leading and trailing columns of a 24px element
+actually differ, which is under 2% of a 390px row, below any gate that also
+survives anti-aliasing.
+
+**So do not treat a clean diff as proof that nothing moved.** It is proof that
+nothing *wide* moved. Small elements — icons, badges, avatars, radio dots — are
+covered by the per-screen spot checks in acceptance criteria §C, not by this
+script. That is what checks 2–4 are for, and this is the reason they exist.
+
+If a small element is load-bearing for a screen, crop both images to it and
+diff the crop: at that scale the element fills the row and the method works
+again.
 
 ## Scores are not comparable across runs
 

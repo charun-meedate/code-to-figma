@@ -41,9 +41,15 @@ VERSION = "image_diff/1.0"
 # Where these numbers come from. Change one and every past score becomes
 # incomparable, which is why the version string above is printed with them.
 #
-# THRESHOLD 24/255 — the per-channel difference that counts as a difference.
-#   Carried from the proven run. Below roughly this, JPEG-ish artifacts and
-#   the two rasterizers' anti-aliasing dominate and every frame looks broken.
+# THRESHOLD 48/255 — the per-channel difference that counts as a difference.
+#   Was 24, inherited from the original programme and never checked here.
+#   Measured on 12 production screenshots: rasterizer-class noise reaches 29 at
+#   its 99th percentile and 68 at its max, so 24 lets the noisy tail through —
+#   4.5 spurious bands per image even at the 5% row gate. At 48 that is 0.0,
+#   while every structural error the method can see at all is still seen.
+#   The cost is real and is written up under "What this cannot see" in
+#   references/verification.md: raising the floor makes small-element
+#   displacement, already marginal, undetectable.
 # ROW 5% — how much of a row must differ before the row joins a band.
 #   Was 2%, chosen against flat synthetic fixtures where rasterizer noise is
 #   zero. Measured against 12 production screenshots: at 2% a resample round
@@ -69,7 +75,7 @@ VERSION = "image_diff/1.0"
 # runs and the warning keys on that outcome directly. It costs one array
 # comparison, cannot false-alarm, and deletes a constant that measurement showed
 # could not be set correctly.
-DEFAULT_THRESHOLD = 24
+DEFAULT_THRESHOLD = 48
 DEFAULT_ROW_THRESHOLD = 5.0
 MIN_ESCALATED_THRESHOLD = 2
 

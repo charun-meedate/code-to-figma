@@ -56,10 +56,16 @@ Two failure modes to watch:
 
 ## §C is a procedure, not a vibe
 
-Check 1 catches structural drift. Checks 2–4 catch the thing check 1 cannot
-see: a value that is visually right and was typed by hand. A hardcoded hex
-that happens to match the token passes every image comparison ever run, and
-breaks the day the design system is relinked.
+Check 1 catches structural drift. Checks 2–4 catch two things check 1 cannot
+see. The first is a value that is visually right and was typed by hand: a
+hardcoded hex that happens to match the token passes every image comparison
+ever run, and breaks the day the design system is relinked.
+
+The second is **anything small that moved**. The image comparison aggregates
+per row, so a 24px icon displaced by 4px peaks at half a percent and opens no
+band — measured, at every threshold. Checks 2–4 are the only thing standing
+between that and a signed-off screen. Do not skip them because the diff was
+clean; a clean diff means nothing *wide* moved.
 
 The ±2px in check 1 is at 1× — scale it if the project's frames are not.
 

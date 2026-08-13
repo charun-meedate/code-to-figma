@@ -88,6 +88,18 @@ else
     && bad "no warning when nothing was hidden" "$OUT" \
     || ok "no warning when nothing was hidden"
 
+  python3 - "$HERE" <<'PYX' && ok "field test: the pixel threshold is the measured 48, not the inherited 24" || bad "pixel threshold" "rasterizer noise reaches 29 at p99 on real screenshots; 24 let 4.5 spurious bands per image through"
+import sys, re
+sys.exit(0 if re.search(r"DEFAULT_THRESHOLD = 48", open(sys.argv[1] + "/image_diff.py").read()) else 1)
+PYX
+
+  # The blind spot is structural, not a tuning knob. If it stops being written
+  # down, a clean diff starts reading as "nothing moved" — which is false.
+  { grep -q "What this cannot see" "$SKILL/references/verification.md" \
+    && grep -q "anything small that moved" "$SKILL/references/acceptance-criteria.md"; } \
+    && ok "the small-element blind spot is documented, and §C is named as the cover for it" \
+    || bad "blind spot documentation" "a 24px icon displaced 4px opens no band at any threshold; if that is not written down, a clean diff is read as proof nothing moved"
+
   # Measured on 12 production screenshots: at the old 2% row threshold a mere
   # resample round trip opened 12.3 bands per image with no design change. The
   # default is 5% for that reason, and bands are ranked so the noise tail is
