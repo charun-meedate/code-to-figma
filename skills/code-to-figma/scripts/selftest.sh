@@ -250,6 +250,38 @@ sys.exit(0 if v["value"] == "6px" and v.get("calcFrom") else 1)
 PY
 rm -rf "$TMP"
 
+# A bad rootKey used to surface as a bare KeyError with no context.
+TMP=$(mktemp -d)
+echo '{"theme":{"colors":{"brand":"#ff0000"}}}' > "$TMP/t.json"
+echo '{"color":[{"glob":"t.json","format":"json-tree","rootKey":"nope"}]}' > "$TMP/bad.json"
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/bad.json" --root "$TMP")
+{ echo "$OUT" | grep -q "no key 'nope'" && echo "$OUT" | grep -q "Present here"; } \
+  && ok "a wrong rootKey names the keys that ARE present" \
+  || bad "rootKey guard" "an uncaught KeyError tells the agent nothing:
+$OUT"
+
+# Only the END pattern was covered; a missing START is the same hazard.
+echo '{"color":[{"glob":"t.json","preset":"css-custom-property","between":["NO SUCH START",""]}]}' > "$TMP/bs.json"
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/bs.json" --root "$TMP")
+echo "$OUT" | grep -q "start pattern" \
+  && ok "a missing \`between\` START pattern errors too, not just a missing END" \
+  || bad "between start guard" "$OUT"
+
+# --profile: a resume must repeat the extraction, not re-derive it.
+python3 - "$TMP" <<'PY'
+import json, sys
+d = sys.argv[1]
+json.dump({"tokens": {"families": {"color": {"status": "present", "sources": [
+    {"glob": "t.json", "format": "json-tree", "rootKey": "theme.colors"}]}}}},
+    open(d + "/profile.json", "w"))
+PY
+OUT=$(py "$HERE/extract_tokens.py" --profile "$TMP/profile.json" --root "$TMP")
+echo "$OUT" | grep -q "brand" \
+  && ok "--profile runs the extraction straight from a project profile" \
+  || bad "--profile mode" "without this every resume re-derives the regexes slightly differently:
+$OUT"
+rm -rf "$TMP"
+
 TMP=$(mktemp -d)
 printf 'static let legacy = Color(UIColor(red: 0.1, green: 0.2, alpha: 1.0))\n' > "$TMP/C.swift"
 echo '{"color":[{"glob":"*.swift","preset":"swift-color"}]}' > "$TMP/cfg.json"

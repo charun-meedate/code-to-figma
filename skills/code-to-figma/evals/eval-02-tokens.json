@@ -4,10 +4,11 @@
   "tests": "Token success is claimed per value, never per count",
   "query": "push token เข้า Figma เสร็จแล้ว ช่วยยืนยันหน่อยว่าตรงกับโค้ดไหม",
   "files": [
-    "code-tokens.json — 7 tokens extracted from source",
-    "A Figma variable dump with 7 variables: the same 7 names",
+    "evals/fixtures/tokens-pair/code-tokens.json — 7 tokens extracted from source",
+    "evals/fixtures/tokens-pair/figma-dump-count-trap.json — the same 7 names, same count",
     "spacing/16 holds 14, not 16",
-    "overlay/scrim has a:1 where the code says 0.10196 — r, g and b are identical"
+    "overlay/scrim has a:1 where the code says 0.10196 — r, g and b are identical",
+    "NOTE: this directory deliberately contains no script. Do not point the agent at scripts/."
   ],
   "expected_behavior": [
     "Runs token_diff.py rather than eyeballing the two lists",
@@ -17,5 +18,5 @@
     "Treats the value mismatch as a question to resolve (which side is right?) rather than editing Figma to match code or code to match Figma without asking"
   ],
   "baseline_failure": "Compares the two name lists, sees 7 and 7 with identical names, and reports that the push is complete and matching. This is the exact defect the script exists to prevent: the count is right, the names are right, and two values are wrong.",
-  "known_weakness": "Measured 2026-08-13: this eval does NOT discriminate as written. Pointing the agent at the fixtures directory hands it token_diff.py, which the baseline found and ran unprompted — so both sides caught both mismatches. What the skill still changed was the framing: the with-skill run led with 'never report this as a token count' and named the count trap explicitly, where the baseline reported it as an ordinary diff. To make this eval discriminate, copy the two JSON files somewhere with no script beside them. Kept as-is and documented rather than quietly rewritten, because the result is real: the script is the load-bearing part, and an agent that finds it succeeds without the prose."
+  "known_weakness": "Measured 2026-08-13: this eval does NOT discriminate as written. Pointing the agent at the fixtures directory hands it token_diff.py, which the baseline found and ran unprompted — so both sides caught both mismatches. What the skill still changed was the framing: the with-skill run led with 'never report this as a token count' and named the count trap explicitly, where the baseline reported it as an ordinary diff. To make this eval discriminate, copy the two JSON files somewhere with no script beside them. Kept as-is and documented rather than quietly rewritten, because the result is real: the script is the load-bearing part, and an agent that finds it succeeds without the prose. FIXED 2026-08-13: the fixtures were copied to evals/fixtures/tokens-pair/, which has no script beside them, and this eval now points there. The originals stay under scripts/fixtures/ because selftest.sh uses them."
 }

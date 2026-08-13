@@ -25,13 +25,17 @@ skills/flutter-catalog-page-stories/  absorbed มาแล้ว — repo น�
 
 | สคริปต์ | เข้า | ออก | exit code |
 |---|---|---|---|
-| `extract_tokens.py` | config `{family: [{glob, preset\|pattern}]}` + `--root` | `{family: {name: {value, file, line}}}` | 0 เสมอ |
+| `extract_tokens.py` | `--config` (หรือ `--profile`) + `--root` · เสริม `--resolve-aliases` | `{family: {name: {value, file, line}}}` | **non-zero เมื่อ pattern ไม่ match, `between` หาไม่เจอ, หรือไฟล์เจอแต่ดึงไม่ได้อะไร** |
 | `token_diff.py` | `--code` (ผลจากตัวบน) + `--figma` (dump) | รายงานทีละค่า | **0 ต่อเมื่อตรงทุกค่า** |
 | `image_diff.py` | `--ref` `--fig` `--scale` | mean / % / **แถบที่ต่าง** | 0 = รันจบ ไม่ได้แปลว่าผ่าน |
 | `segment_text.py` | JSON array ทาง stdin | `{ต้นฉบับ: ที่แทรก ZWSP}` เฉพาะที่เปลี่ยน | 0 |
 
 **`image_diff.py` จงใจไม่บอก PASS/FAIL** เพราะการตัดสินต้องดูว่าแถบที่ต่างอยู่ตรงไหน
 ไม่ใช่ต่างกี่เปอร์เซ็นต์ · ถ้าเพิ่ม PASS/FAIL เข้าไป จะทำลายกฎข้อสำคัญที่สุดของทั้งงาน
+
+**`extract_tokens.py` จงใจ exit non-zero เมื่อ config ไม่เข้ากับโปรเจกต์** — เพราะ "ดึงได้ 0"
+เคยถูกรายงานเป็น "family นี้ไม่มีในโค้ด" ซึ่งตาม skill แปลว่าเป็น finding · pattern พังเลยถูกฟอก
+เป็นข้อสรุปที่มั่นใจและผิด
 
 **`token_diff.py` จงใจ exit non-zero เมื่อไม่ตรง** เพราะมันต้องใช้เป็น gate ใน CI ได้
 และเพราะการรายงาน "ครบแล้ว" จากการนับคือ defect ที่สคริปต์นี้มีไว้กัน
@@ -42,7 +46,8 @@ skills/flutter-catalog-page-stories/  absorbed มาแล้ว — repo น�
 ./skills/code-to-figma/scripts/selftest.sh
 ```
 
-45 ข้อ ไม่ต้องต่อเน็ต ไม่ต้องมี Figma ไม่ต้องมีโปรเจกต์ · **รันสองรอบ**
+ไม่ต้องต่อเน็ต ไม่ต้องมี Figma ไม่ต้องมีโปรเจกต์ · **รันสองรอบ** (จำนวนข้อดูที่บรรทัดสรุปท้ายผลรัน
+ไม่ต้องมาจดไว้ที่นี่ — เลขที่จดไว้จะเก่าทุกครั้งที่เพิ่ม assertion)
 (สีเขียวรอบเดียวไม่นับว่าเขียว — เคยเจอมาแล้วว่า commit ที่รายงานว่าเขียว แดงสลับ)
 
 ข้อที่จะ skip ถ้าเครื่องไม่พร้อม: segmentation (ต้องมี PyICU หรืออยู่บน macOS) และ

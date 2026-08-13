@@ -50,7 +50,9 @@ import re
 import sys
 from pathlib import Path
 
-VERSION = "token_diff/1.0"
+# 1.1 adds oklch/rgb/hsl parsing, family-qualified keys, separator-aware
+# rule_map, ignoreFigma waivers, and the uncomparable bucket.
+VERSION = "token_diff/1.1"
 
 
 # ---------------------------------------------------------------- value model

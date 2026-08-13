@@ -21,7 +21,8 @@
       "_comment": "status: present | partial | absent. An `absent` family MUST carry absenceEvidence and a finding id — absence is a finding to report, never a gap to fill by inventing values.",
       "color": {
         "status": null,
-        "sources": [{ "file": null, "container": null, "pattern": null }],
+        "_sourcesNote": "These are extract_tokens.py source objects verbatim, so `--profile` can run the extraction directly. Each needs a `glob` plus a `preset`, `pattern` or `format`; optional nameFilter / between / rootKey / prefixStrip / skip. Write the source here once discovery has confirmed its sample output with the human — a later session then repeats the extraction instead of re-deriving it.",
+        "sources": [{ "glob": null, "preset": null, "nameFilter": null, "between": null }],
         "count": 0,
         "absenceEvidence": null,
         "finding": null

@@ -10,6 +10,12 @@ Instantiate from `templates/`. Fill placeholders from `project-profile.json`.
 | File | Created | Written by | Read by |
 |---|---|---|---|
 | `project-profile.json` | intake | discovery + intake | session ritual step 2 |
+
+The profile is also where the **extraction config** lives, under
+`tokens.families[*].sources[]`, in the shape `extract_tokens.py --profile` reads.
+Without that, every session re-derives the regexes from scratch and gets slightly
+different answers — which is the same drift this programme exists to remove.
+
 | `GROUND-TRUTH-RULES.md` | intake | agent, grows during work | session ritual step 1, in full |
 | `acceptance-criteria.md` | intake, **unsigned** | agent, signed by leads | reviewer |
 | `deviation-log.md` | intake | agent, approved by lead | reviewer |

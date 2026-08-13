@@ -1,0 +1,14 @@
+{
+  "_comment": "Shape emitted by extract_tokens.py. Used by selftest.sh.",
+  "color": {
+    "textPrimary": { "value": "#1A1A1A", "file": "lib/tokens/app_colors.dart", "line": 12 },
+    "textPrimaryInverse": { "value": "#FFFFFF", "file": "lib/tokens/app_colors.dart", "line": 13 },
+    "surfaceMainPrimary": { "value": "#FFFFFF", "file": "lib/tokens/app_colors.dart", "line": 20 },
+    "overlayScrim": { "value": "0x1AFF5900", "file": "lib/tokens/app_colors.dart", "line": 31 }
+  },
+  "spacing": {
+    "spacing4": { "value": 4, "file": "lib/tokens/app_dimens.dart", "line": 5 },
+    "spacing16": { "value": 16, "file": "lib/tokens/app_dimens.dart", "line": 8 },
+    "radiusRounded": { "value": 999, "file": "lib/tokens/app_dimens.dart", "line": 21 }
+  }
+}

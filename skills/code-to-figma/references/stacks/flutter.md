@@ -3,6 +3,14 @@
 This is the stack the whole method was built on, so the guidance here is
 evidence rather than extrapolation.
 
+**"Proven" means proven on one project, not on the stack.** Two later Flutter
+codebases each broke something written from the first: the colour preset
+matched only the ThemeExtension constructor idiom and read 0 of 52 colours from
+a `static const` holder class, and this page assumed a single-layer theme when
+a three-layer palette/semantic split is common. Both are fixed. Expect the same
+kind of narrowness anywhere this page states a shape rather than a principle —
+check the shape against the project in front of you.
+
 ## Contents
 
 - Catalog: load the bundled skills

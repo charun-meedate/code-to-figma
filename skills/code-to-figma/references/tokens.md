@@ -9,11 +9,40 @@ in name and value** — 95 colours and 43 numbers, alphas included.
 It is also the leg that reads the codebase most thoroughly, which is why it
 finds things nobody was looking for.
 
+## Contents
+
+- The method
+- Never report a count
+- What the push finds out about the codebase
+- Names
+- Automation, honestly
+
+---
+
 ## The method
 
-1. **Extract from code.** `extract_tokens.py --config … --root …` with a
-   regex or preset per family, from the token table discovery produced.
+1. **Extract from code.** `extract_tokens.py --config … --root … --resolve-aliases`
+   with a preset or regex per family, from the token table discovery produced.
    Check the count and five samples against the file before going further.
+
+   Two options carry most of the real world. **`--resolve-aliases`** follows
+   `var(--x)`, `{a.b.c}` and dotted identifiers like `AppPalette.neutralLevel00`
+   to the value they end at, then evaluates the `calc()` that leaves behind —
+   on real codebases most entries are references, and one web project went from
+   43% comparable to 100% with this flag alone. **`format: "json-tree"`** walks
+   a nested theme dumped to JSON, joining the key path, which is what a nested
+   Tailwind or MUI config needs; a regex over one keeps only the leaf key and
+   drops collisions silently.
+
+   Each resolved entry keeps `aliasOf`. Use it: the semantic layer should
+   become Figma variables that **reference** the primitives, not flattened
+   copies of them.
+
+   **Write the confirmed source objects into the profile** under
+   `tokens.families[*].sources[]`. A later session then runs
+   `extract_tokens.py --profile <profile> --root .` and repeats the extraction
+   instead of re-deriving it — which is otherwise done from scratch every time,
+   slightly differently.
 2. **Create the variables in Figma.** Collections mirroring the families,
    names mirroring the code (`textPrimaryInverse` → `text/primary-inverse`,
    `spacing16` → `spacing/16`), scopes set so the picker stays usable.

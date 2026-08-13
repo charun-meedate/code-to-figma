@@ -1,7 +1,11 @@
 # When there is no catalog
 
-Read this on the no-catalog branch at screens scope. Two options, both weaker
-than a catalog, both usable if you say plainly which one you took.
+Read this on the no-catalog branch at screens scope. Two options, both usable
+if you say plainly which one you took.
+
+**How much weaker than a catalog depends on the platform, and the gap is
+smaller on the web than this page first claimed** — see the web note below
+before applying the limits in the next section.
 
 Tokens and flows do not need this page at all. Token values come from source
 files; flow edges come from router files. Neither ever needed a rendered
@@ -12,6 +16,15 @@ component in a state the product cannot easily be pushed into — a failed
 request, an empty list, a name too long for its container, a permission
 denied. On the proven run those states were the majority of the work: 16
 screens produced 59 frames. Without a catalog most of that is out of reach.
+
+## Contents
+
+- Option 1 · Drive the real app and capture
+- Option 2 · Read the code
+- Say which one, in writing
+- The cheap middle path
+
+---
 
 ## Option 1 · Drive the real app and capture
 
@@ -38,6 +51,10 @@ applying them there.
 - **Data varies between captures**, so a strict image comparison produces noise.
   Compare structure — order, spacing rhythm, colour, type, presence and
   absence of elements — not pixels.
+- **You need a reachable environment and a test account.** On the proven run
+  the development environment pointed at a host that did not resolve, which
+  was enough for the pre-login screens and stopped everything after them.
+  That limitation was recorded per screen as deferred, never quietly skipped.
 
 ### On the web, those two limits mostly do not apply
 
@@ -55,10 +72,6 @@ drift check gives you. Say that, rather than the two limits above.
 
 If you find a project already screenshotting its routes in an e2e suite, that
 is your evidence base — do not propose building a catalog before looking.
-- **You need a reachable environment and a test account.** On the proven run
-  the development environment pointed at a host that did not resolve, which
-  was enough for the pre-login screens and stopped everything after them.
-  That limitation was recorded per screen as deferred, never quietly skipped.
 
 ## Option 2 · Read the code
 

@@ -205,7 +205,7 @@ thing an agent reaches for by default.
 
 | Script | Does |
 |---|---|
-| `extract_tokens.py` | pulls token names and values out of source, per family, by preset or regex |
+| `extract_tokens.py` | pulls token names and values out of source, per family, by preset or regex; walks nested themes, resolves alias chains, evaluates `calc()` |
 | `token_diff.py` | compares those values against a Figma variable dump; exits non-zero unless every value matches |
 | `image_diff.py` | frame vs reference, reported as differing bands, with low-contrast escalation |
 | `segment_text.py` | zero-width spaces at legal break points for Thai, Lao, Khmer and Burmese |

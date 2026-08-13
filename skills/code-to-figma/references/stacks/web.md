@@ -3,10 +3,13 @@
 One page, because Storybook covers all of them and the differences are in
 where the tokens live, not in the method.
 
-**Status: playbook, not proven.** The method transferred from a run on another
-stack; the mechanics below are the standard tooling for these frameworks and
-have not been through a full programme here. Where something is a
-recommendation rather than a measured result, it says so.
+**Status: token extraction is field-proven; everything downstream is a
+playbook.** The tokens tier has been run against four production codebases —
+React Router 8 + Tailwind v4, Next 15 + Tailwind v3, and two Vite + TanStack
+Router + Tailwind v4 apps — and the numbers quoted on this page are measured
+from them. The catalog, capture and screen-comparison sections have not been
+through a full programme here; where something is a recommendation rather than
+a measured result, it says so.
 
 ## Contents
 

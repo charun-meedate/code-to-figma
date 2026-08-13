@@ -105,9 +105,11 @@ uses its own design system, and it belongs in the findings.
 **Fallback when nothing matches.** Ask for one to three token files. Read them,
 derive a regex, run `extract_tokens.py`, and **echo the count plus five samples
 back for confirmation before using it.** Write the confirmed regex into the
-profile. A regex per family is the portable primitive here — it is how the
-same check worked on the proven run, and it is why an unfamiliar stack costs a
-conversation rather than a rewrite.
+profile — as a source object under `tokens.families[*].sources[]`, in the shape
+`extract_tokens.py` takes, so `--profile` can re-run it later. A regex per
+family is the portable primitive here — it is how the same check worked on the
+proven run, and it is why an unfamiliar stack costs a conversation rather than
+a rewrite.
 
 ## D4 · Catalog
 

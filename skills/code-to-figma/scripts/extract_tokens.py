@@ -3,48 +3,65 @@
 JSON that token_diff.py compares against Figma.
 
     python3 extract_tokens.py --config tokens-extract.json --root ~/dev/my-app
-    python3 extract_tokens.py --config c.json --root . --out code-tokens.json
+    python3 extract_tokens.py --profile docs/design-mirror/project-profile.json --root .
+    python3 extract_tokens.py --config c.json --root . --resolve-aliases --out code-tokens.json
     python3 extract_tokens.py --list-presets
 
-The config is a small map of families to sources. Each source names either a
-built-in preset or its own regex, so a stack nobody has written a playbook for
-is still one confirmed regex away from working:
+The config maps families to sources. Each source names a built-in preset or its
+own regex, so a stack nobody has written a playbook for is one confirmed regex
+away from working:
 
 {
-  "color": [
-    { "glob": "lib/tokens/*.dart", "preset": "dart-color" }
-  ],
-  "spacing": [
-    { "glob": "lib/tokens/app_dimens.dart", "preset": "dart-double" }
-  ],
-  "typography": [
-    { "glob": "src/theme.ts", "pattern": "(?P<name>\\\\w+):\\\\s*'(?P<value>[^']+)'" }
-  ]
+  "color":      [{ "glob": "lib/tokens/*.dart", "preset": "dart-color" }],
+  "typography": [{ "glob": "theme.json", "format": "json-tree", "rootKey": "fontSize" }]
 }
 
-A custom `pattern` must have named groups `name` and `value`. Optional keys:
+`--profile` reads the same source objects out of a project profile's
+`tokens.families[*].sources[]`, so a later session repeats the extraction
+instead of re-deriving it.
 
-  nameFilter    a regex the raw name must match. One CSS file or one theme
-                object usually holds every family at once, so this is how you
-                split them: "^color-" for colour, "^(spacing|radius)-" for
-                numbers. Applied BEFORE prefixStrip.
-  between       ["startRegex", "endRegex"] — read only the text between them.
-                Light and dark schemes normally live in one file under the
-                same token names, so without this you silently get whichever
-                appears first. Pass the end regex as "" to read to the end.
+SOURCE OPTIONS
+
+  preset        one of --list-presets. Covers Dart (both the ThemeExtension
+                constructor idiom and `static const x = Color(...)`), Dart
+                references to a palette, CSS custom properties, flat JS
+                objects, Swift, Compose, and DTCG tokens.json.
+  pattern       your own regex, with named groups (?P<name>…) and (?P<value>…)
+  format        "json-tree" walks a nested theme dumped to JSON and joins the
+                key path, which is what a nested Tailwind/MUI/Chakra config
+                needs — a regex over one keeps only the leaf key and silently
+                drops collisions. `rootKey` selects a subtree ("colors").
+  nameFilter    regex the raw name must match. One CSS file usually holds every
+                family at once; this is how you split them. Before prefixStrip.
+  between       ["startRegex", "endRegex"] — read only between them. Light and
+                dark live in one file under the same names, so without this you
+                silently get whichever came first. "" reads to the end.
   prefixStrip   drop a leading string from every name after filtering
   skip          names to leave out — be able to justify each one
 
+--resolve-aliases
+
+Follows references to the value they end at, in rounds: `var(--x)`,
+`{a.b.c}`, and a dotted identifier like `AppPalette.neutralLevel00`. Substitutes
+inside expressions too, then evaluates the simple `calc()` shapes that leaves
+behind. Keeps `aliasOf` on each resolved entry so the semantic layer can be
+modelled in Figma as variable references rather than flattened copies. Anything
+it cannot reach is named, not silently left uncomparable.
+
+On real codebases most entries are references rather than values — one web
+project went from 43% to 100% comparable with this flag.
+
 WHAT THIS DELIBERATELY DOES NOT DO
 
-It does not guess. If a family has no source in the config, it is reported as
-absent and that absence is a finding to write down — on the proven run the
-product had no shadow-token layer at all, with shadows written inline across
-twenty files. The correct output there was "absent, here is the evidence",
-never a set of plausible shadow values invented to fill the gap.
+It does not guess, and it will not let a broken config look like a finding.
+A family with no configured source is reported absent — but a source whose glob
+matched files and yielded NOTHING is a hard error, because "0 extracted" was
+being reported as "this product has no colour tokens" when the real cause was a
+pattern that did not fit the project's idiom.
 
-Provenance: generalizes the regex-per-family parameterization used by the
-token drift test on the proven run.
+Provenance: generalizes the regex-per-family parameterization used by the token
+drift test on the programme this skill was extracted from; every option beyond
+that came from a specific real codebase that needed it.
 """
 from __future__ import annotations
 
@@ -54,7 +71,9 @@ import re
 import sys
 from pathlib import Path
 
-VERSION = "extract_tokens/1.0"
+# 1.2 adds json-tree, --resolve-aliases (+calc), dart-ref, both dart-color
+# idioms, --profile, and hard errors where a bad config used to look like a finding.
+VERSION = "extract_tokens/1.2"
 
 PRESETS: dict[str, dict[str, str]] = {
     "dart-color": {
@@ -198,8 +217,17 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
         if fmt == "json-tree":
             root = json.loads(text)
             for key in (src.get("rootKey") or "").split("."):
-                if key:
-                    root = root[key]
+                if not key:
+                    continue
+                if not isinstance(root, dict) or key not in root:
+                    have = ", ".join(sorted(root)[:12]) if isinstance(root, dict) else type(root).__name__
+                    raise SystemExit(
+                        f"[{family}] rootKey {src.get('rootKey')!r}: no key {key!r} in {rel}.\n"
+                        f"  Present here: {have}\n"
+                        f"  A dumped theme often nests under 'theme' or 'extend' — check the dump "
+                        f"before changing the pattern."
+                    )
+                root = root[key]
             walk_tree(root, [], found, rel)
             continue
 
@@ -376,7 +404,11 @@ def main() -> int:
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    p.add_argument("--config", type=Path)
+    p.add_argument("--config", type=Path, help="extraction config: {family: [source, ...]}")
+    p.add_argument("--profile", type=Path,
+                   help="a project profile; reads the same source objects from "
+                        "tokens.families[*].sources[] so a later session repeats the "
+                        "extraction instead of re-deriving it")
     p.add_argument("--root", type=Path, default=Path("."))
     p.add_argument("--out", type=Path)
     p.add_argument("--resolve-aliases", action="store_true",
@@ -392,10 +424,28 @@ def main() -> int:
         print("run this, and check the count and five samples against the file before trusting it.")
         return 0
 
-    if not args.config:
-        raise SystemExit("--config is required (or --list-presets)")
+    if not (args.config or args.profile):
+        raise SystemExit("--config or --profile is required (or --list-presets)")
 
-    config = json.loads(args.config.read_text())
+    if args.profile:
+        prof = json.loads(args.profile.read_text())
+        families = prof.get("tokens", {}).get("families", {})
+        config = {}
+        for fam, spec in families.items():
+            if fam.startswith("_"):
+                continue
+            sources = [s for s in (spec or {}).get("sources", []) if s and s.get("glob")]
+            config[fam] = sources
+        if not any(config.values()):
+            raise SystemExit(
+                f"{args.profile} has no usable token sources.\n"
+                "  Each tokens.families[*].sources[] entry needs at least a `glob`, plus a "
+                "`preset`, `pattern` or `format` — the same shape --config takes.\n"
+                "  Discovery is what fills these in; run it, confirm the samples with the "
+                "human, and write the confirmed source back into the profile."
+            )
+    else:
+        config = json.loads(args.config.read_text())
     result: dict[str, dict] = {}
     absent: list[str] = []
 
