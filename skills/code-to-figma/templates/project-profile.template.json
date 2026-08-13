@@ -75,7 +75,7 @@
       { "name": null, "w": null, "h": null, "device": null, "safeTop": null, "safeBottom": null, "scale": null }
     ],
     "themes": [],
-    "_themesNote": "Empty means single-theme. Two themes double the frame count at screen level but cost almost nothing at token level — decide at intake, per tier.",
+    "_themesNote": "Empty means single-theme. A second theme doubles the frame count at screen level. At TOKEN level it is not merely cheap — it may be impossible: a second variable mode requires a paid Figma plan, and a starter-tier file rejects addMode outright. Probe it at P0 gate 0b before writing anything here, and if the file cannot take it, record one theme and put the other in scope.notDoing.",
     "scaleCalibrated": false,
     "_scaleNote": "Do not measure anything off an image until scaleCalibrated is true. Measure one element of known size first. A forgotten ÷2 produces a double-size component that survives review. On a tier that produces no images, false is the correct final state.",
     "regenCheck": null

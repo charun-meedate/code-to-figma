@@ -214,6 +214,13 @@ no frames, only placeholder node cards; place them, then proceed.)*
 3. Generate every line from the JSON in one pass. Draw the legend.
 4. To change anything: change the JSON, delete all lines, regenerate.
 
+**Regenerating places nodes too, so it overwrites any manual arrangement.**
+If someone has moved frames by hand since the last run, `meta.layout` will pull
+them back to the grid and their work disappears. Ask which is authoritative
+before regenerating: update `meta.layout` to match what they did, or tell them
+the move is about to be undone. Silently reverting a human's layout is the
+fastest way to lose their trust in the generated canvas.
+
 **No line generator ships with this skill — you write it, once, as part of
 this phase.** It is plugin code that reads `flow-edges.json`, places the nodes,
 and draws one vector per edge. Two conventions make step 4 possible at all:

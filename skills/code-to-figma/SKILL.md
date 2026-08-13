@@ -81,7 +81,8 @@ get wrong:
 
 On the web, add: **which breakpoints get documented**, and **which themes** —
 a web product has no single frame size, and silently drawing one width is the
-same defect as an unmeasured number.
+same defect as an unmeasured number. Before agreeing to two themes, check the
+Figma file can hold a second variable mode; on a free plan it cannot.
 
 An answer already stated plainly in the user's prompt can be taken — but
 restate it for confirmation. **A guessed intake poisons every phase after it**,
@@ -118,7 +119,10 @@ Two of the rest are gates, not steps:
 
 - **P0 does not end until the acceptance criteria are signed.** Also in P0: the
   font exists in Figma at the exact weights the code uses — if it does not,
-  **stop and wait for it; never substitute a similar font.**
+  **stop and wait for it; never substitute a similar font.** And if the
+  programme covers more than one theme, the target file must actually support a
+  second variable mode — that is a **paid-plan feature**, a starter-tier file
+  rejects it outright, and it is cheaper to probe than to promise.
 - **P5 does not begin until one pilot screen has been approved by a human.**
   If the approach is wrong it is wrong identically on every screen.
 
@@ -205,7 +209,7 @@ thing an agent reaches for by default.
 
 | Script | Does |
 |---|---|
-| `extract_tokens.py` | pulls token names and values out of source, per family, by preset or regex; walks nested themes, resolves alias chains, evaluates `calc()` |
+| `extract_tokens.py` | pulls token names and values out of source, per family, by preset or regex. `format: "json-tree"` walks a nested theme; `--resolve-aliases` follows `var()`, DTCG and Dart references and evaluates the `calc()` left behind; `--profile` re-runs a saved config so a resume does not re-derive it |
 | `token_diff.py` | compares those values against a Figma variable dump; exits non-zero unless every value matches |
 | `image_diff.py` | frame vs reference, reported as differing bands, with low-contrast escalation |
 | `segment_text.py` | zero-width spaces at legal break points for Thai, Lao, Khmer and Burmese |

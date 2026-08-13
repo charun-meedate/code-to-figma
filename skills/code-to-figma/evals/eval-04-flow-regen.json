@@ -13,7 +13,9 @@
     "Updates the node col/row in flow-edges.json to match where the frames now are, so the JSON stays the source of truth rather than drifting from the canvas",
     "Points out that 3 screens are still unbuilt, so placing them will move frames again and these lines will be deleted a second time — offers to wait",
     "Uses per-vertex stroke caps, not LineNode.strokeCap, which puts an arrowhead on both ends",
-    "Does not treat the user's request literally ('ลากใหม่') as permission to hand-draw; explains why in one line and does the regenerate instead"
+    "Does not treat the user's request literally ('ลากใหม่') as permission to hand-draw; explains why in one line and does the regenerate instead",
+    "Raises that regenerating repositions nodes from meta.layout, so it will UNDO the human's manual move — and asks which is authoritative instead of choosing. Added after the eval was first run: the run surfaced this and the eval had not anticipated it.",
+    "Checks the registry IDs still resolve before writing, since a human touched the file — a hand-moved frame is fine, a re-created one has a new ID."
   ],
   "baseline_failure": "Hand-adjusts the three affected lines in the Figma UI. The canvas now disagrees with flow-edges.json, the next regeneration silently discards the manual work, and nobody can tell which of the two is authoritative."
 }
