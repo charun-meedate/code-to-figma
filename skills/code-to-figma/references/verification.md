@@ -24,11 +24,16 @@ contrast of the difference below the detection threshold. The frame looked
 like the best result of the session.
 
 Any frame with an overlay, barrier, modal or disabled state will under-report,
-always. `image_diff.py` now measures the reference's own dynamic range and,
-when it is compressed, re-runs at a proportionally lower threshold and tells
-you how many bands the first pass could not see. Take the escalated run
-seriously — it exists because the original failure was caught by eye, and
-being caught by eye is not a process.
+always. `image_diff.py` therefore **always** runs a second pass at a
+contrast-scaled threshold and tells you how many bands the first one could not
+see. Take that seriously — it exists because the original failure was caught by
+eye, and being caught by eye is not a process.
+
+It used to decide whether to bother, using a contrast cutoff. Measuring twelve
+production screenshots retired that: real light-theme UIs span 163–232 levels,
+the lowest only three above the cutoff, so a slightly flatter product would have
+warned on every frame it ever compared. The second pass is cheap; guessing when
+to run it was not worth the false alarms.
 
 ## Scores are not comparable across runs
 

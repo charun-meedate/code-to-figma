@@ -77,17 +77,32 @@ else
   # The one that matters: the same displacement hidden behind a scrim scores
   # 0.00% at the default threshold. Judged on the number alone it passes.
   OUT=$(py "$HERE/image_diff.py" --ref "$FIX/scrim__ref.png" --fig "$FIX/scrim__fig.png")
-  echo "$OUT" | grep -q "LOW CONTRAST FRAME" \
-    && ok "low-contrast frame is detected" \
-    || bad "low-contrast frame is detected" "$OUT"
   echo "$OUT" | grep -q "were INVISIBLE at threshold" \
-    && ok "the escalated run surfaces bands the default threshold missed (the 0.32%/320px case)" \
+    && ok "the second pass surfaces bands the default threshold missed (the 0.32%/320px case)" \
     || bad "escalation surfaces the hidden bands" "$OUT"
 
+  # The warning keys on hidden bands, not on a contrast guess — so a frame with
+  # nothing hidden must stay silent no matter how flat it is.
   OUT=$(py "$HERE/image_diff.py" --ref "$FIX/identical__ref.png" --fig "$FIX/identical__fig.png")
-  echo "$OUT" | grep -q "LOW CONTRAST" \
-    && bad "no false low-contrast alarm on a normal frame" "$OUT" \
-    || ok "no false low-contrast alarm on a normal frame"
+  echo "$OUT" | grep -q "INVISIBLE" \
+    && bad "no warning when nothing was hidden" "$OUT" \
+    || ok "no warning when nothing was hidden"
+
+  # Measured on 12 production screenshots: real light-theme UIs span 163-232,
+  # only 3 above the retired 160 cutoff. A flat frame with a real difference must
+  # report it plainly, with no contrast commentary.
+  py - <<'PYX'
+from PIL import Image
+import numpy as np
+a = np.full((200, 200, 3), 200, dtype=np.uint8); a[20:60, 20:180] = 120
+b = a.copy(); b[20:60, 20:180] = 200; b[80:120, 20:180] = 120
+Image.fromarray(a).save('/tmp/_flat_ref.png'); Image.fromarray(b).save('/tmp/_flat_fig.png')
+PYX
+  OUT=$(py "$HERE/image_diff.py" --ref /tmp/_flat_ref.png --fig /tmp/_flat_fig.png)
+  echo "$OUT" | grep -q "bands *: 2" \
+    && ok "a flat, low-spread frame still reports its real bands" \
+    || bad "flat frame reporting" "$OUT"
+  rm -f /tmp/_flat_ref.png /tmp/_flat_fig.png
 fi
 
 # ------------------------------------------------------------------ token_diff

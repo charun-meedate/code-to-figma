@@ -47,14 +47,23 @@ VERSION = "image_diff/1.0"
 # ROW 2% — how much of a row must differ before the row joins a band. Chosen so
 #   a single glyph's worth of anti-aliasing does not open a band, while one
 #   short differing text row does.
-# CONTRAST 160/255 — below this spread, the reference is behind something
-#   translucent and the fixed threshold stops meaning anything. A normal UI
-#   frame spans far more; the scrim fixture spans 18.
-# FLOOR 2 — the escalated threshold never goes below this, or sensor-level
-#   noise in a flat colour field becomes a band.
+# FLOOR 2 — the contrast-scaled threshold never goes below this, or
+#   sensor-level noise in a flat colour field becomes a band.
+#
+# There is deliberately NO "is this low contrast?" gate. There was one, at 160,
+# and measuring real screenshots retired it. Twelve production UI captures span
+# 163–232 — the lowest sits THREE levels above the cutoff, so a slightly flatter
+# design would have raised the warning on every frame it ever compared, which is
+# how a warning gets ignored. The populations also overlap: those same captures
+# under a light barrier reach 172, above the cutoff.
+#
+# The gate was a proxy anyway. What matters is not "does this look low contrast"
+# but "did the nominal threshold hide a real band". So the second pass now always
+# runs and the warning keys on that outcome directly. It costs one array
+# comparison, cannot false-alarm, and deletes a constant that measurement showed
+# could not be set correctly.
 DEFAULT_THRESHOLD = 24
 DEFAULT_ROW_THRESHOLD = 2.0
-LOW_CONTRAST_SPREAD = 160
 MIN_ESCALATED_THRESHOLD = 2
 
 try:
@@ -163,12 +172,10 @@ def main() -> int:
     # "the tool says so".
     lum = np.asarray(ref.convert("L"), dtype=np.int16)
     contrast = int(np.percentile(lum, 99) - np.percentile(lum, 1))
-    low_contrast = contrast < LOW_CONTRAST_SPREAD
     escalated = None
-    if low_contrast:
-        scaled = max(MIN_ESCALATED_THRESHOLD, round(args.threshold * contrast / 255))
-        if scaled < args.threshold:
-            escalated = (scaled,) + analyse(scaled)
+    scaled = max(MIN_ESCALATED_THRESHOLD, round(args.threshold * contrast / 255))
+    if scaled < args.threshold:
+        escalated = (scaled,) + analyse(scaled)
 
     if not band_list:
         print("\n  No differing bands. Still open the images once — a frame that failed to\n"
@@ -178,25 +185,21 @@ def main() -> int:
         print("  A band on a card, button, input or image edge is structural drift,")
         print("  at any percentage.")
 
-    if low_contrast:
-        print(
-            f"\n  ⚠ LOW CONTRAST FRAME — the reference spans only {contrast}/255 levels."
-            "\n  Something translucent covers it (scrim, barrier, modal, disabled state)."
-            "\n  A fixed threshold under-reports here, always."
-        )
-        if escalated:
-            th2, over2, bands2 = escalated
+    if escalated:
+        th2, over2, bands2 = escalated
+        hidden = len(bands2) - len(band_list)
+        if hidden > 0:
             pct2 = float(over2.mean() * 100)
-            print(f"  Re-run at the contrast-scaled threshold {th2}: {pct2:.2f}% over, {len(bands2)} bands")
+            print(
+                f"\n  ⚠⚠ {hidden} band(s) were INVISIBLE at threshold {args.threshold}."
+                f"\n  The reference spans {contrast}/255 levels, so something translucent is"
+                "\n  probably over it — a scrim, barrier, modal or disabled state. This is the"
+                "\n  failure mode that once hid a 320px displacement at 0.32%."
+                f"\n  Judge this frame on the scaled run below, not the first one."
+            )
+            print(f"  At the contrast-scaled threshold {th2}: {pct2:.2f}% over, {len(bands2)} bands")
             for y0, y1, peak in bands2:
                 print(f"      y {y0:>4}–{y1:<4}  ({y1 - y0 + 1:>3} rows, peak {peak:.1f}%)")
-            hidden = len(bands2) - len(band_list)
-            if hidden > 0:
-                print(
-                    f"\n  ⚠⚠ {hidden} band(s) were INVISIBLE at threshold {args.threshold}."
-                    "\n  This is the failure mode that once hid a 320px displacement behind a"
-                    "\n  scrim at 0.32%. Judge this frame on the scaled run, not the first one."
-                )
 
     if pct_over < 1.0 and widest >= 0.05 * fig.height:
         print(
