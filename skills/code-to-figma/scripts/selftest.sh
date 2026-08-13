@@ -182,6 +182,40 @@ py "$HERE/token_diff.py" --code "$TMP/code.json" --figma "$TMP/figma.json" --map
   || bad "ignoreFigma waiver" ""
 rm -rf "$TMP"
 
+# Field-test findings, from running the tokens tier on two real web codebases.
+TMP=$(mktemp -d)
+cat > "$TMP/theme.json" <<'EOF'
+{"colors":{"primary":{"DEFAULT":"var(--primary-default)","dark":"var(--primary-dark)"},
+           "accent":{"DEFAULT":"#00ff00"}},
+ "fontSize":{"body-l":["16px","26px"]}}
+EOF
+cat > "$TMP/vars.css" <<'EOF'
+:root { --primary-default: #e32321; --primary-dark: #b91c1c; }
+EOF
+cat > "$TMP/cfg.json" <<'EOF'
+{"color":[{"glob":"theme.json","format":"json-tree","rootKey":"colors"},
+          {"glob":"vars.css","preset":"css-custom-property"}],
+ "typography":[{"glob":"theme.json","format":"json-tree","rootKey":"fontSize"}]}
+EOF
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/cfg.json" --root "$TMP")
+echo "$OUT" | grep -q "primary/DEFAULT" \
+  && ok "field test: json-tree keeps the key path, so primary.500 and accent.500 cannot collide" \
+  || bad "json-tree key paths" "$OUT"
+echo "$OUT" | grep -q "body-l/line-height" \
+  && ok "field test: a Tailwind fontSize array yields both the size and the line-height" \
+  || bad "fontSize array" "$OUT"
+
+OUT=$(py "$HERE/extract_tokens.py" --config "$TMP/cfg.json" --root "$TMP" --resolve-aliases --out "$TMP/o.json")
+python3 - "$TMP/o.json" <<'PY' && ok "field test: var() aliases resolve to their end value" || bad "alias resolution" "on two real codebases most entries were references, not values; unresolved they are all uncomparable"
+import json, sys
+j = json.load(open(sys.argv[1]))
+sys.exit(0 if j["color"]["primary/DEFAULT"]["value"] == "#e32321" else 1)
+PY
+echo "$OUT" | grep -q "still unresolved" \
+  && bad "self-reference guard" "a path-named entry claimed its own alias key and resolved to itself" \
+  || ok "field test: a path-named entry does not claim its own alias key"
+rm -rf "$TMP"
+
 TMP=$(mktemp -d)
 printf 'static let legacy = Color(UIColor(red: 0.1, green: 0.2, alpha: 1.0))\n' > "$TMP/C.swift"
 echo '{"color":[{"glob":"*.swift","preset":"swift-color"}]}' > "$TMP/cfg.json"

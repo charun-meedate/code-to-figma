@@ -91,7 +91,38 @@ PRESETS: dict[str, dict[str, str]] = {
         "format": "json",
         "about": "W3C DTCG tokens.json — walks the tree and reads every $value",
     },
+    "json-tree": {
+        "format": "json-tree",
+        "about": "Any nested theme dumped to JSON (tailwind/MUI/Chakra) — joins the key "
+                 "path with '/'. This is what a nested object needs instead of a regex",
+    },
 }
+
+
+def walk_tree(node, trail: list[str], out: dict, file: str) -> None:
+    """Walk a plain nested theme object, joining the key path.
+
+    A regex over a nested object keeps only the leaf key, so `brand.500` and
+    `accent.500` collide and one is lost. The path is the identity here.
+
+    Arrays are a Tailwind convention rather than a value: `fontSize` entries are
+    [size, lineHeight] or [size, {lineHeight, letterSpacing}]. Both parts are
+    real tokens, so both are emitted rather than the second being dropped.
+    """
+    if isinstance(node, dict):
+        for k, v in node.items():
+            walk_tree(v, trail + [str(k)], out, file)
+    elif isinstance(node, list):
+        if node:
+            walk_tree(node[0], trail, out, file)
+        for extra in node[1:]:
+            if isinstance(extra, dict):
+                for k, v in extra.items():
+                    walk_tree(v, trail + [str(k)], out, file)
+            else:
+                walk_tree(extra, trail + ["line-height"], out, file)
+    else:
+        out["/".join(trail)] = {"value": node, "file": file, "line": None}
 
 
 def walk_dtcg(node, trail: list[str], out: dict, file: str) -> None:
@@ -156,6 +187,14 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
             walk_dtcg(json.loads(text), [], found, rel)
             continue
 
+        if fmt == "json-tree":
+            root = json.loads(text)
+            for key in (src.get("rootKey") or "").split("."):
+                if key:
+                    root = root[key]
+            walk_tree(root, [], found, rel)
+            continue
+
         rx = re.compile(pattern)
         for m in rx.finditer(text):
             name = m.group("name")
@@ -188,6 +227,70 @@ def extract_source(root: Path, src: dict, family: str) -> dict:
     return found
 
 
+_REF = re.compile(r"^\s*(?:var\(\s*--([\w-]+)\s*\)|\{([\w.-]+)\})\s*$")
+
+
+def resolve_aliases(result: dict, rounds: int = 8) -> tuple[int, list[str]]:
+    """Follow `var(--x)` and `{a.b.c}` references to the value they end at.
+
+    A semantic layer that aliases a primitive is the normal shape of a modern
+    design system, not an edge case — on two real web codebases the majority of
+    extracted entries were references rather than values. Left unresolved they
+    are uncomparable, so the tokens tier reports most of itself as unverifiable.
+
+    Matching is by last path segment as well as full name, because the alias
+    writes the CSS custom-property name (`--primary-default`) while the entry
+    may be filed under a path (`colors/primary/default`).
+    """
+    # Index concrete values BEFORE references. A path-named entry aliases onto
+    # the same key as the primitive it points at — `colors/primary/DEFAULT`
+    # normalizes to `primary-default`, which is exactly the custom property it
+    # references. Indexed in file order it claims that key and then resolves to
+    # itself, so every alias in the file silently stays unresolved.
+    index: dict[str, tuple[str, str]] = {}
+    for concrete_pass in (True, False):
+        for family, tokens in result.items():
+            for name, entry in tokens.items():
+                v = entry["value"]
+                is_ref = isinstance(v, str) and bool(_REF.match(v))
+                if is_ref == concrete_pass:
+                    continue
+                for key in {name, name.split("/")[-1], name.replace("/", "-"), name.replace("/", ".")}:
+                    index.setdefault(key.lower(), (family, name))
+
+    unresolved: list[str] = []
+    resolved = 0
+    for _ in range(rounds):
+        changed = 0
+        for family, tokens in result.items():
+            for name, entry in tokens.items():
+                v = entry["value"]
+                if not isinstance(v, str):
+                    continue
+                m = _REF.match(v)
+                if not m:
+                    continue
+                ref = (m.group(1) or m.group(2) or "").lower()
+                hit = index.get(ref) or index.get(ref.replace(".", "-")) or index.get(ref.split(".")[-1])
+                if not hit or hit == (family, name):
+                    continue
+                target = result[hit[0]][hit[1]]["value"]
+                if isinstance(target, str) and _REF.match(target):
+                    continue  # still a reference; another round will get it
+                entry["value"] = target
+                entry["aliasOf"] = ref
+                changed += 1
+        resolved += changed
+        if not changed:
+            break
+
+    for family, tokens in result.items():
+        for name, entry in tokens.items():
+            if isinstance(entry["value"], str) and _REF.match(entry["value"]):
+                unresolved.append(f"{family}/{name} -> {entry['value']}")
+    return resolved, unresolved
+
+
 def main() -> int:
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -195,6 +298,8 @@ def main() -> int:
     p.add_argument("--config", type=Path)
     p.add_argument("--root", type=Path, default=Path("."))
     p.add_argument("--out", type=Path)
+    p.add_argument("--resolve-aliases", action="store_true",
+                   help="follow var(--x) / {a.b.c} references to their end value")
     p.add_argument("--list-presets", action="store_true")
     args = p.parse_args()
 
@@ -227,8 +332,24 @@ def main() -> int:
         else:
             absent.append(family)
 
+    alias_note = ""
+    if args.resolve_aliases:
+        n, unresolved = resolve_aliases(result)
+        alias_note = f"  resolved {n} alias reference(s)"
+        if unresolved:
+            alias_note += f"; {len(unresolved)} still unresolved"
+
     total = sum(len(v) for v in result.values())
     print(f"{VERSION}  root={args.root}")
+    if alias_note:
+        print(alias_note)
+        if args.resolve_aliases and unresolved:
+            print("  UNRESOLVED — the target is not in any configured source. Add the file that")
+            print("  defines it, or these stay uncomparable:")
+            for u in unresolved[:10]:
+                print(f"    {u}")
+            if len(unresolved) > 10:
+                print(f"    … and {len(unresolved) - 10} more")
     for family, tokens in result.items():
         files = sorted({t["file"] for t in tokens.values()})
         print(f"  {family:<14} {len(tokens):>4}  from {', '.join(files)}")

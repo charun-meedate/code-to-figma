@@ -38,24 +38,33 @@ recommendation rather than a measured result, it says so.
 compares a partial set and calls it clean. Use them only for a genuinely flat
 object.
 
-For anything nested, have the project print its resolved theme as JSON and
-walk that instead — the values are already resolved, which also solves the
-alias problem below:
+For anything nested, dump the theme to JSON and use `format: "json-tree"`,
+which joins the key path so `brand.500` and `accent.500` stay distinct:
 
 ```bash
-node -e "const t=require('./tailwind.config.js');console.log(JSON.stringify((t.default||t).theme.extend))" > /tmp/theme.json
+node -e "const t=require('./tailwind.config.js');console.log(JSON.stringify((t.default||t).theme.extend))" > theme.json
 ```
 
-Then extract with a small walk that joins the key path with `/`, the way the
-`dtcg-json` handler already does.
+```json
+{ "color":      [{ "glob": "theme.json", "format": "json-tree", "rootKey": "colors" }],
+  "typography": [{ "glob": "theme.json", "format": "json-tree", "rootKey": "fontSize" }] }
+```
+
+Verified on a 437-line production Tailwind v3 config: 41 colours, 150
+typography entries and 10 shadows, with no collisions. A `fontSize` value is
+an array — `['16px','26px']` — and both parts come out, the second as
+`.../line-height`. If the config `require`s nothing, this runs without
+`node_modules`.
 
 **Tailwind v4 moved the theme into CSS.** Looking for `tailwind.config.js` on a
 v4 project finds nothing and the obvious conclusion — "no Tailwind theme here"
 — is wrong. Check the CSS for `@theme` and `@theme inline`. Measured on a real
 shadcn + Tailwind v4 project: **531 custom properties across two files, of
 which only 43% were directly usable values** — the rest were `var()` aliases
-(260), `oklch()` (31) and `calc()` (6). Plan for that ratio before promising a
-token count.
+(260), `oklch()` (31) and `calc()` (6). With `--resolve-aliases` and oklch
+support that same project reads **100%**. Run the extraction both ways once:
+the gap between the two numbers is the size of the semantic layer, which is
+worth knowing before you model it in Figma.
 
 `@theme inline` in particular is *always* an alias layer: `--color-primary:
 var(--primary)`. The real values sit in a `:root` block, often in a different
