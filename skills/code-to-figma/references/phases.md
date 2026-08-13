@@ -50,6 +50,7 @@ before spending a day discovering it is not.
 | Gate | tokens | flows-map | components | screens / flows |
 |---|---|---|---|---|
 | 0 Figma file | ✔ | ✔ | ✔ | ✔ |
+| 0b Variable modes | if 2+ themes | — | if 2+ themes | if 2+ themes |
 | 1 Font | ✔ | — | ✔ | ✔ |
 | 2 Script | if non-Latin | — | if non-Latin | if non-Latin |
 | 3 Evidence + scale | — | — | ✔ | ✔ |
@@ -58,6 +59,28 @@ before spending a day discovering it is not.
 0. **Figma file gate.** `figma.fileKey` is in the profile, and `get_metadata`
    on it succeeds. Nothing downstream has an argument to run with otherwise.
    If the file is to be created, create it here and record the key.
+0b. **Variable-mode gate** — only when the programme covers more than one theme.
+   **Multiple variable modes is a paid-plan feature.** On a starter-tier file
+   `addMode` throws `Limited to 1 modes only`, and no amount of scripting gets
+   round it. Measured 2026-08-13 on a real file.
+
+   Probe it before promising a two-theme system, because it costs nothing:
+
+   ```js
+   const probe = figma.variables.createVariableCollection('_mode-probe');
+   let supported;
+   try { probe.addMode('probe'); supported = probe.modes.length > 1; }
+   catch (e) { supported = false; }
+   finally { probe.remove(); }   // finally, or a caught error leaves debris
+   return { supported };
+   ```
+
+   If it comes back false, the choice is the human's, not yours: one theme in
+   this file, a file on a plan that supports modes, or two separate
+   collections. Record which in the profile and put the other theme in the
+   scope not-doing list. Do not quietly build light only and let the deliverable
+   imply both.
+
 1. **Font gate.** The families and weights the code uses must exist in the
    Figma file. Enumerate what is actually available — the plugin API's
    available-fonts call — and match against the weights found in D7.

@@ -47,6 +47,14 @@ finds things nobody was looking for.
    names mirroring the code (`textPrimaryInverse` → `text/primary-inverse`,
    `spacing16` → `spacing/16`), scopes set so the picker stays usable.
    Record every variable key in the registry as you create it.
+
+   **A mode per theme needs a paid plan.** Verified on a real file: a
+   starter-tier file throws `Limited to 1 modes only`. If the target file cannot
+   take a second mode, say so and let the human pick — one theme, a different
+   file, or separate collections — then write the choice into the profile's
+   `screenshots.themes` and the not-doing list. Text styles and effect styles
+   have no such limit; both were created and read back correctly on the same
+   starter-tier file.
 3. **Dump them back out** and write the dump to a file. Read the values back
    from Figma — do not assume the write did what you asked.
 

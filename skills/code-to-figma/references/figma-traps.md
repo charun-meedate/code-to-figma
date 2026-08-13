@@ -25,6 +25,7 @@ property simply does not take. Read this before the first Figma write.
 | ~~`opacity` inside a paint object that is bound to a variable~~ | ✅ **RETIRED 2026-08-13** — probed `{...boundPaint, opacity: 0.4}`: both the opacity **and** the binding survived | Nothing needed |
 | Setting `x`, `y`, `resize()` or `constraints` on a node **inside an instance** | ❌ still throws: `This property cannot be overridden in an instance: relative-transform`. **But `name` IS overridable** — the original row listed it and that was wrong (probed 2026-08-13) | Design masters so size flows: auto-layout plus grow. Anything that must genuinely change size becomes a **variant**. Overridable: text content, visibility, variant properties, fills/strokes, **and name** |
 | `visible = false` on a node inside an instance | ⚠️ **one-way.** The node disappears from queries, from `.children`, and by-ID lookup returns null. You cannot turn it back on | Hide last, and hide from the inside out. If you hide the wrong thing, delete the instance and build it again |
+| `collection.addMode()` on a starter-tier file | ❌ throws `Limited to 1 modes only`. Multiple variable modes is a **paid-plan** feature, not an API you can work around (probed 2026-08-13) | Probe before promising a two-theme system — see P0 gate 0b in `phases.md`. Text styles and effect styles are not limited this way |
 | Hiding an auto-layout child to "make it empty" | ⚠️ auto-layout removes it from the flow and everything below shifts up — unlike a framework flex child, which still occupies its space when its content is empty | Hide the *inner* child only; never the layout slot itself |
 
 ## Things Figma already has — do not draw them
@@ -33,6 +34,23 @@ property simply does not take. Read this before the first Figma write.
 |---|---|
 | Icons from a standard icon font | The font is very likely already installed. Create a text node and type the **ligature name** at the size the code specifies. You get the real glyph. On the proven run an icon was hand-drawn as vectors before anyone checked — and the correction became a deviation row |
 | The product's own icons and images | Upload the real asset files and import as vector trees or image fills. Never redraw |
+
+## Two rules for writing a probe
+
+Both learned by getting them wrong while re-testing this page.
+
+**Clean up in `finally`.** A probe that wraps its attempt in try/catch does not
+crash — so any cleanup line placed *after* the throwing statement never runs,
+and the throwaway collection or node stays in the user's file. `use_figma` is
+atomic per script, which saves you when the script itself throws; it does not
+save you when you caught the error yourself. One probe here left a `_probe`
+collection behind exactly that way.
+
+**Match the instrument to the claim.** A visual claim needs a visual check. The
+arrowhead row says a head appears on *both* ends — reading `strokeCap` back only
+returns the value you set, and reading `vectorNetwork` off a LINE node throws
+`no such property`. That error looks like "cannot verify" and is really "wrong
+tool": one `screenshot()` settled it in seconds.
 
 ## Probe status
 
@@ -45,12 +63,13 @@ property simply does not take. Read this before the first Figma write.
 | `visible = false` inside an instance | 2026-08-13 | reproduces — child count drops to 0, unreachable |
 | Bound paint left at `{0,0,0}` | 2026-08-13 | **retired** |
 | `opacity` spread into a bound paint | 2026-08-13 | **retired** |
-| `saveVersionHistoryAsync` | not re-probed | inherited |
-| `ARROW_EQUILATERAL` on both ends | not re-probed | inherited |
-| Hiding an auto-layout child shifts siblings | not re-probed | inherited |
+| `saveVersionHistoryAsync` | 2026-08-13 | reproduces — `"not a supported API"` |
+| `ARROW_EQUILATERAL` on both ends | 2026-08-13 | reproduces — confirmed by screenshot |
+| Hiding an auto-layout child shifts siblings | 2026-08-13 | reproduces — container 140→90, sibling y 100→50 |
 
-Three rows carry the original programme's date and nothing more. Treat them as
-leads, not facts, and re-probe before designing around one.
+**All ten rows probed: six reproduce, two overstated, two retired.** Re-probe
+after any Figma release you notice; the two retired rows had been shipped as
+fact for as long as this page existed.
 
 ## The structural lesson
 

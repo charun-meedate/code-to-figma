@@ -176,6 +176,10 @@ review-proof.
   manifest → the exact families **and weights** the code uses. This is the P0
   gate: the font must exist in Figma at those weights before a single frame is
   drawn.
+- **Plan tier**, if the product has more than one theme. `whoami` reports a tier
+  per plan, and **multiple variable modes is paid-only** — a starter-tier file
+  rejects `addMode` outright. Two themes in the code plus a starter-tier target
+  file is a conflict to surface at intake, not at P1.
 
 ## D8 · Text script
 
