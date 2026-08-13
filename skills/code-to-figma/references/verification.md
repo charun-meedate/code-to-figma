@@ -1,5 +1,17 @@
 # Verification — read where it differs, not how much
 
+## Contents
+
+- The recipe
+- The percentage is the least trustworthy number on the page
+- Scores are not comparable across runs
+- Before every verification session
+- Things that look like errors and are not
+- Measuring at all
+- No unmeasured numbers
+
+---
+
 ## The recipe
 
 1. Export the frame from Figma at 1×.
